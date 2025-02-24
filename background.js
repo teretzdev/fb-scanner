@@ -60,15 +60,19 @@ function monitorGroupUrls() {
 
       const activeTabUrls = tabs.map((tab) => tab.url);
 
+      if (activeTabUrls.length === 0) {
+        logMessage('warn', 'No active tabs found in the current window');
+      }
+
       groupUrls.forEach((url) => {
         chrome.storage.local.get({ monitoringStates: {} }, (stateData) => {
           const monitoringStates = stateData.monitoringStates || {};
           const isMonitoringEnabled = monitoringStates[url];
 
-          if (isMonitoringEnabled && activeTabUrls.includes(url)) {
-            try {
-              const matchingTab = tabs.find((tab) => tab.url === url);
-              if (matchingTab) {
+          if (isMonitoringEnabled) {
+            const matchingTab = tabs.find((tab) => tab.url === url);
+            if (matchingTab) {
+              try {
                 chrome.scripting.executeScript(
                   {
                     target: { tabId: matchingTab.id, allFrames: true },
@@ -82,9 +86,11 @@ function monitorGroupUrls() {
                     }
                   }
                 );
+              } catch (error) {
+                logMessage('error', `Error monitoring URL ${url}: ${error.message}`);
               }
-            } catch (error) {
-              logMessage('error', `Error monitoring URL ${url}: ${error.message}`);
+            } else {
+              logMessage('warn', `No active tab matches the monitored URL: ${url}`);
             }
           }
         });

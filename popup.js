@@ -11,6 +11,7 @@ function logMessage(level, message) {
 }
 
 // Save Facebook credentials to Chrome storage
+// TODO: Consider encrypting credentials before storing them for enhanced security.
 function saveCredentials(username, password) {
   return new Promise((resolve, reject) => {
     try {
@@ -79,6 +80,7 @@ function clearLogs() {
 }
 
 // Populate the logs container with messages
+// TODO: Consider adding user notifications (e.g., toast messages) for better feedback on actions.
 function displayLog(message) {
   const logsContainer = document.getElementById('logs-container');
   const logEntry = document.createElement('div');
@@ -91,13 +93,13 @@ function initializePopup() {
   // Handle credentials form submission
   const credentialsForm = document.getElementById('credentials-form');
   credentialsForm.addEventListener('submit', (event) => {
-    event.preventDefault();
+    event.preventDefault(); // Prevent form submission from reloading the page.
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
     saveCredentials(username, password)
-      .then(() => displayLog('Credentials saved successfully'))
-      .catch((error) => displayLog(`Error saving credentials: ${error}`));
+      .then(() => displayLog('Credentials saved successfully')) // Log success message.
+      .catch((error) => displayLog(`Error saving credentials: ${error}`)); // Log error message.
   });
 
   // Handle adding a group URL
