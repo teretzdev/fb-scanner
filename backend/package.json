@@ -1,0 +1,48 @@
+{
+  "name": "fb-scanner-backend",
+  "version": "1.0.0",
+  "description": "Backend server for Facebook group post scraping using Puppeteer and Express.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "puppeteer": "^21.3.8",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "teretzdev",
+  "license": "MIT"
+}
+```
+
+### Step 4: Review the Code
+- **Dependencies**: The file includes `express`, `puppeteer`, and `dotenv`, which are used in the backend codebase.
+- **Scripts**: A `start` script is defined to run the `server.js` file, which is the main entry point for the backend.
+- **Metadata**: The `name`, `version`, `description`, `main`, `author`, and `license` fields are included for completeness.
+- **Node.js Version**: The `engines` field specifies a minimum Node.js version of 14.0.0, ensuring compatibility with modern features.
+
+### Final Output
+```
+{
+  "name": "fb-scanner-backend",
+  "version": "1.0.0",
+  "description": "Backend server for Facebook group post scraping using Puppeteer and Express.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "puppeteer": "^21.3.8",
+    "dotenv": "^16.3.1"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "teretzdev",
+  "license": "MIT"
+}

@@ -1,0 +1,26 @@
+{
+  "name": "fb-scanner-frontend",
+  "version": "1.0.0",
+  "description": "Frontend application for Facebook group post scraping using React and Vite.",
+  "main": "src/main.tsx",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "axios": "^1.5.0"
+  },
+  "devDependencies": {
+    "vite": "^4.4.9",
+    "@vitejs/plugin-react": "^4.0.3",
+    "typescript": "^5.2.2"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "author": "teretzdev",
+  "license": "MIT"
+}
