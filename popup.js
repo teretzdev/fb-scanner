@@ -97,9 +97,16 @@ function initializePopup() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
+    displayLog('Saving credentials...');
+    const saveButton = document.getElementById('save-credentials');
+    saveButton.disabled = true; // Disable button during async operation.
+
     saveCredentials(username, password)
       .then(() => displayLog('Credentials saved successfully')) // Log success message.
-      .catch((error) => displayLog(`Error saving credentials: ${error}`)); // Log error message.
+      .catch((error) => displayLog(`Error saving credentials: ${error}`)) // Log error message.
+      .finally(() => {
+        saveButton.disabled = false; // Re-enable button after operation.
+      });
   });
 
   // Handle adding a group URL
@@ -108,16 +115,30 @@ function initializePopup() {
     const groupUrlInput = document.getElementById('group-url');
     const groupUrl = groupUrlInput.value;
 
-    if (groupUrl) {
-      addGroupUrl(groupUrl)
-        .then((groupUrls) => {
-          displayLog(`Group URL added: ${groupUrl}`);
-          updateGroupUrlList(groupUrls);
-        })
-        .catch((error) => displayLog(`Error adding group URL: ${error}`));
-    } else {
-      displayLog('Please enter a valid group URL');
+    if (!groupUrl) {
+      displayLog('Error: Group URL cannot be empty.');
+      return;
     }
+
+    const urlPattern = /^(https?:\/\/)?(www\.)?facebook\.com\/groups\/[a-zA-Z0-9._-]+\/?$/;
+    if (!urlPattern.test(groupUrl)) {
+      displayLog('Error: Invalid Facebook group URL format.');
+      return;
+    }
+
+    displayLog('Adding group URL...');
+    const addButton = document.getElementById('add-group-url');
+    addButton.disabled = true; // Disable button during async operation.
+
+    addGroupUrl(groupUrl)
+      .then((groupUrls) => {
+        displayLog(`Group URL added: ${groupUrl}`);
+        updateGroupUrlList(groupUrls);
+      })
+      .catch((error) => displayLog(`Error adding group URL: ${error}`))
+      .finally(() => {
+        addButton.disabled = false; // Re-enable button after operation.
+      });
   });
 
   // Handle clearing logs
@@ -125,9 +146,11 @@ function initializePopup() {
   clearLogsButton.addEventListener('click', clearLogs);
 
   // Load and display group URLs
+  displayLog('Loading group URLs...');
   loadGroupUrls()
     .then((groupUrls) => updateGroupUrlList(groupUrls))
-    .catch((error) => displayLog(`Error loading group URLs: ${error}`));
+    .catch((error) => displayLog(`Error loading group URLs: ${error}`))
+    .finally(() => displayLog('Finished loading group URLs.'));
 }
 
 // Update the group URL list in the popup
@@ -181,15 +204,19 @@ function updateGroupUrlList(groupUrls) {
 
         // Toggle the monitoring state
         monitoringStates[url] = !isMonitoring;
-        chrome.storage.local.set({ monitoringStates }, () => {
-          if (monitoringStates[url]) {
-            toggleButton.textContent = 'Disable Monitoring';
-            statusSpan.textContent = 'Monitoring';
-          } else {
-            toggleButton.textContent = 'Enable Monitoring';
-            statusSpan.textContent = 'Paused';
-          }
-        });
+        try {
+          chrome.storage.local.set({ monitoringStates }, () => {
+            if (monitoringStates[url]) {
+              toggleButton.textContent = 'Disable Monitoring';
+              statusSpan.textContent = 'Monitoring';
+            } else {
+              toggleButton.textContent = 'Enable Monitoring';
+              statusSpan.textContent = 'Paused';
+            }
+          });
+        } catch (error) {
+          displayLog(`Error toggling monitoring state for ${url}: ${error.message}`);
+        }
       });
     });
   });
