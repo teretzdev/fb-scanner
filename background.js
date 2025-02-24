@@ -37,6 +37,42 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   return true;
 });
 
+const MONITOR_INTERVAL = 60000; // 1 minute
+
+// Function to monitor Facebook group URLs
+function monitorGroupUrls() {
+  chrome.storage.local.get({ groupUrls: [] }, (data) => {
+    const groupUrls = data.groupUrls || [];
+    if (groupUrls.length === 0) {
+      logMessage('warn', 'No group URLs found for monitoring');
+      return;
+    }
+
+    groupUrls.forEach((url) => {
+      try {
+        chrome.scripting.executeScript(
+          {
+            target: { tabId: null, allFrames: true },
+            files: ['content.js'],
+          },
+          () => {
+            if (chrome.runtime.lastError) {
+              logMessage('error', `Failed to inject content script into ${url}: ${chrome.runtime.lastError.message}`);
+            } else {
+              logMessage('info', `Content script injected into ${url}`);
+            }
+          }
+        );
+      } catch (error) {
+        logMessage('error', `Error monitoring URL ${url}: ${error.message}`);
+      }
+    });
+  });
+}
+
+// Start periodic monitoring
+setInterval(monitorGroupUrls, MONITOR_INTERVAL);
+
 // Log when the service worker is installed or activated
 chrome.runtime.onInstalled.addListener(() => {
   logMessage('info', 'Extension installed or updated');

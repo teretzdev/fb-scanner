@@ -23,7 +23,14 @@
    - Click "Add URL" to save the group URL.
    - The list of saved group URLs will be displayed below the input field.
 
-3. **View Logs**:
+3. **Monitoring Facebook Groups**:
+   - Use the popup interface to enable or disable monitoring for individual Facebook groups.
+   - The status of each monitored group will be displayed in the popup interface:
+     - **Monitoring**: The group is actively being monitored.
+     - **Paused**: Monitoring for the group is temporarily disabled.
+     - **Error**: An issue occurred while monitoring the group.
+
+4. **View Logs**:
    - The "Logs" section displays activity logs for the extension.
    - Click "Clear Logs" to remove all logs from the display.
 

@@ -32,17 +32,27 @@ function interactWithFacebookPage() {
   try {
     logMessage('info', 'Interacting with the Facebook page...');
 
-    // Example: Extract the title of the page
+    // Extract the title of the page
     const pageTitle = document.title;
     logMessage('info', `Page title: ${pageTitle}`);
 
-    // Send the page title to the background script
-    sendMessageToBackground('log', `Page title: ${pageTitle}`)
+    // Monitor the page for new posts and comments
+    const posts = document.querySelectorAll('[role="article"]');
+    const extractedData = Array.from(posts).map((post) => {
+      const content = post.innerText || post.textContent;
+      const timestamp = post.querySelector('abbr')?.getAttribute('title') || 'Unknown time';
+      return { content, timestamp };
+    });
+
+    logMessage('info', `Extracted ${extractedData.length} posts from the page`);
+
+    // Send the extracted data to the background script
+    sendMessageToBackground('monitor', { pageTitle, posts: extractedData })
       .then((response) => {
         logMessage('info', `Background script response: ${JSON.stringify(response)}`);
       })
       .catch((error) => {
-        logMessage('error', `Error sending message to background script: ${error}`);
+        logMessage('error', `Error sending extracted data to background script: ${error}`);
       });
   } catch (error) {
     logMessage('error', `Error interacting with the Facebook page: ${error.message}`);

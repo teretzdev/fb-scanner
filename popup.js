@@ -136,7 +136,60 @@ function updateGroupUrlList(groupUrls) {
   groupUrls.forEach((url) => {
     const listItem = document.createElement('li');
     listItem.textContent = url;
+
+    // Create a container for the URL and controls
+    const container = document.createElement('div');
+    container.className = 'group-url-container';
+
+    // Create a span for the URL
+    const urlSpan = document.createElement('span');
+    urlSpan.textContent = url;
+    container.appendChild(urlSpan);
+
+    // Create a button to toggle monitoring
+    const toggleButton = document.createElement('button');
+    toggleButton.textContent = 'Enable Monitoring';
+    toggleButton.className = 'toggle-monitoring';
+    container.appendChild(toggleButton);
+
+    // Create a span to display the monitoring status
+    const statusSpan = document.createElement('span');
+    statusSpan.className = 'monitoring-status';
+    statusSpan.textContent = 'Paused';
+    container.appendChild(statusSpan);
+
+    // Append the container to the list item
+    listItem.appendChild(container);
     groupUrlList.appendChild(listItem);
+
+    // Load the current monitoring state from storage
+    chrome.storage.local.get({ monitoringStates: {} }, (data) => {
+      const monitoringStates = data.monitoringStates || {};
+      if (monitoringStates[url]) {
+        toggleButton.textContent = 'Disable Monitoring';
+        statusSpan.textContent = 'Monitoring';
+      }
+    });
+
+    // Add event listener to toggle monitoring
+    toggleButton.addEventListener('click', () => {
+      chrome.storage.local.get({ monitoringStates: {} }, (data) => {
+        const monitoringStates = data.monitoringStates || {};
+        const isMonitoring = monitoringStates[url];
+
+        // Toggle the monitoring state
+        monitoringStates[url] = !isMonitoring;
+        chrome.storage.local.set({ monitoringStates }, () => {
+          if (monitoringStates[url]) {
+            toggleButton.textContent = 'Disable Monitoring';
+            statusSpan.textContent = 'Monitoring';
+          } else {
+            toggleButton.textContent = 'Enable Monitoring';
+            statusSpan.textContent = 'Paused';
+          }
+        });
+      });
+    });
   });
 
   logMessage('info', 'Group URL list updated');
