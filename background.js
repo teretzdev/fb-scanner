@@ -23,6 +23,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Handle error messages
       logMessage('error', `Error reported: ${message.payload}`);
       sendResponse({ status: 'success', message: 'Error logged' });
+    } else if (message.type === 'monitor') {
+      // Handle monitor messages
+      logMessage('info', `Monitor message received with payload: ${JSON.stringify(message.payload)}`);
+      sendResponse({ status: 'success', message: 'Monitor message processed' });
     } else {
       // Handle unknown message types
       logMessage('warn', `Unknown message type: ${message.type}`);
