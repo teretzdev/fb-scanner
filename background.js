@@ -10,35 +10,52 @@ function logMessage(level, message) {
   console[level](`[${timestamp}] ${message}`);
 }
 
-// Listener for messages from content scripts or popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  try {
-    logMessage('info', `Received message: ${JSON.stringify(message)} from ${sender.url || 'unknown sender'}`);
-
-    if (message.type === 'log') {
-      // Log messages sent from content scripts or popup
-      logMessage('info', `Log from extension: ${message.payload}`);
-      sendResponse({ status: 'success', message: 'Log received' });
-    } else if (message.type === 'error') {
-      // Handle error messages
-      logMessage('error', `Error reported: ${message.payload}`);
-      sendResponse({ status: 'success', message: 'Error logged' });
-    } else if (message.type === 'monitor') {
-      // Handle monitor messages
-      logMessage('info', `Monitor message received with payload: ${JSON.stringify(message.payload)}`);
-      sendResponse({ status: 'success', message: 'Monitor message processed' });
-    } else {
-      // Handle unknown message types
-      logMessage('warn', `Unknown message type: ${message.type}`);
-      sendResponse({ status: 'error', message: 'Unknown message type' });
-    }
-  } catch (error) {
-    logMessage('error', `Exception in message handler: ${error.message}`);
-    sendResponse({ status: 'error', message: 'Internal error occurred' });
+class MessageQueue {
+  constructor() {
+    this.queue = [];
+    this.isProcessing = false;
   }
 
-  // Indicate that the response will be sent asynchronously
-  return true;
+  enqueue(message, sender, sendResponse) {
+    this.queue.push({ message, sender, sendResponse });
+    this.processQueue();
+  }
+
+  async processQueue() {
+    if (this.isProcessing || this.queue.length === 0) return;
+
+    this.isProcessing = true;
+    const { message, sender, sendResponse } = this.queue.shift();
+
+    try {
+      logMessage('info', `Processing message: ${JSON.stringify(message)} from ${sender.url || 'unknown sender'}`);
+
+      if (message.type === 'log') {
+        logMessage('info', `Log from extension: ${message.payload}`);
+        sendResponse({ status: 'success', message: 'Log received' });
+      } else if (message.type === 'error') {
+        logMessage('error', `Error reported: ${message.payload}`);
+        sendResponse({ status: 'success', message: 'Error logged' });
+      } else if (message.type === 'monitor') {
+        logMessage('info', `Monitor message received with payload: ${JSON.stringify(message.payload)}`);
+        sendResponse({ status: 'success', message: 'Monitor message processed' });
+      } else {
+        logMessage('warn', `Unknown message type: ${message.type}`);
+        sendResponse({ status: 'error', message: 'Unknown message type' });
+      }
+    } catch (error) {
+      logMessage('error', `Exception in message handler: ${error.message}`);
+      sendResponse({ status: 'error', message: 'Internal error occurred' });
+    } finally {
+      this.isProcessing = false;
+      this.processQueue();
+    }
+  }
+}
+
+const messageQueue = new MessageQueue();
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  messageQueue.enqueue(message, sender, sendResponse);
 });
 
 const MONITOR_INTERVAL = 60000; // 1 minute
@@ -105,12 +122,34 @@ function debounce(func, delay) {
   };
 }
 
-// Start periodic monitoring with debouncing
+function performHealthCheck() {
+  chrome.storage.local.get({ groupUrls: [] }, async ({ groupUrls }) => {
+    const tabs = await chrome.tabs.query({});
+    const activeTabIds = tabs.map((tab) => tab.id);
+
+    chrome.storage.local.get({ monitoringStates: {} }, ({ monitoringStates }) => {
+      for (const [url, tabId] of Object.entries(monitoringStates)) {
+        if (!activeTabIds.includes(tabId)) {
+          logMessage('warn', `Tab ${tabId} for URL ${url} is no longer active. Attempting recovery.`);
+          delete monitoringStates[url];
+        }
+      }
+      chrome.storage.local.set({ monitoringStates });
+    });
+  });
+}
+
 const debouncedMonitorGroupUrls = debounce(monitorGroupUrls, MONITOR_INTERVAL);
 debouncedMonitorGroupUrls();
+setInterval(performHealthCheck, MONITOR_INTERVAL);
 
-// Cleanup monitoring states on tab close
-chrome.tabs.onRemoved.addListener((tabId) => {
+function cleanupResources() {
+  logMessage('info', 'Cleaning up resources on extension unload.');
+  clearInterval(monitorTimeout);
+  chrome.tabs.onRemoved.removeListener(cleanupMonitoringStates);
+}
+
+function cleanupMonitoringStates(tabId) {
   logMessage('info', `Tab ${tabId} closed. Cleaning up monitoring states.`);
   chrome.storage.local.get({ monitoringStates: {} }, (data) => {
     const monitoringStates = data.monitoringStates || {};
@@ -121,7 +160,10 @@ chrome.tabs.onRemoved.addListener((tabId) => {
     }
     chrome.storage.local.set({ monitoringStates });
   });
-});
+}
+
+chrome.tabs.onRemoved.addListener(cleanupMonitoringStates);
+chrome.runtime.onSuspend.addListener(cleanupResources);
 
 // Log when the service worker is installed or activated
 chrome.runtime.onInstalled.addListener(() => {

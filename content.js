@@ -4,7 +4,10 @@
  * Includes detailed logging and error handling.
  */
 
-// Utility function for logging messages with timestamps
+/**
+ * Utility function for logging messages with timestamps.
+ * Logs messages at the specified level (e.g., 'info', 'error').
+ */
 function logMessage(level, message) {
   const timestamp = new Date().toISOString();
   console[level](`[${timestamp}] ${message}`);
@@ -57,21 +60,70 @@ function sendMessageToBackground(type, payload) {
         logMessage('error', `Error sending extracted data to background script: ${error}`);
       }
     })();
-    // Set up a mutation observer to monitor changes in the DOM
-    const observer = new MutationObserver(() => {
-      try {
-        const updatedData = extractPosts();
-        logMessage('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
-        sendMessageToBackground('monitor', { pageTitle, posts: updatedData }).catch((error) => {
-          logMessage('error', `Error sending updated data to background script: ${error}`);
-        });
-      } catch (error) {
-        logMessage('error', `Error during DOM observation: ${error.message}`);
+    /**
+     * Utility class for retrying failed operations with exponential backoff.
+     */
+    class RetryOperation {
+      constructor(maxRetries = 3, delay = 1000) {
+        this.maxRetries = maxRetries;
+        this.delay = delay;
       }
-    });
+
+      async execute(operation) {
+        for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+          try {
+            return await operation();
+          } catch (error) {
+            if (attempt === this.maxRetries) {
+              throw error;
+            }
+            logMessage('warn', `Retry attempt ${attempt} failed. Retrying in ${this.delay}ms...`);
+            await new Promise((resolve) => setTimeout(resolve, this.delay));
+          }
+        }
+      }
+    }
+
+    /**
+     * Utility function to throttle the execution of a callback.
+     */
+    function throttle(callback, limit) {
+      let lastCall = 0;
+      return (...args) => {
+        const now = Date.now();
+        if (now - lastCall >= limit) {
+          lastCall = now;
+          callback(...args);
+        }
+      };
+    }
+
+    // Set up a mutation observer to monitor changes in the DOM
+    const observer = new MutationObserver(
+      throttle(() => {
+        try {
+          const updatedData = extractPosts();
+          logMessage('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
+          const retryOperation = new RetryOperation(3, 1000);
+          retryOperation.execute(() =>
+            sendMessageToBackground('monitor', { pageTitle, posts: updatedData })
+          ).catch((error) => {
+            logMessage('error', `Error sending updated data to background script: ${error}`);
+          });
+        } catch (error) {
+          logMessage('error', `Error during DOM observation: ${error.message}`);
+        }
+      }, 2000) // Throttle DOM observation to once every 2 seconds
+    );
 
     // Start observing the body for changes
     observer.observe(document.body, { childList: true, subtree: true });
+
+    // Cleanup observer on script unload to prevent memory leaks
+    window.addEventListener('beforeunload', () => {
+      observer.disconnect();
+      logMessage('info', 'MutationObserver disconnected to prevent memory leaks.');
+    });
   } catch (error) {
     if (error instanceof TypeError) {
       logMessage('error', `TypeError encountered: ${error.message}`);
