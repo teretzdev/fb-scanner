@@ -52,24 +52,43 @@ function monitorGroupUrls() {
       return;
     }
 
-    groupUrls.forEach((url) => {
-      try {
-        chrome.scripting.executeScript(
-          {
-            target: { tabId: null, allFrames: true },
-            files: ['content.js'],
-          },
-          () => {
-            if (chrome.runtime.lastError) {
-              logMessage('error', `Failed to inject content script into ${url}: ${chrome.runtime.lastError.message}`);
-            } else {
-              logMessage('info', `Content script injected into ${url}`);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (chrome.runtime.lastError) {
+        logMessage('error', `Error querying active tabs: ${chrome.runtime.lastError.message}`);
+        return;
+      }
+
+      const activeTabUrls = tabs.map((tab) => tab.url);
+
+      groupUrls.forEach((url) => {
+        chrome.storage.local.get({ monitoringStates: {} }, (stateData) => {
+          const monitoringStates = stateData.monitoringStates || {};
+          const isMonitoringEnabled = monitoringStates[url];
+
+          if (isMonitoringEnabled && activeTabUrls.includes(url)) {
+            try {
+              const matchingTab = tabs.find((tab) => tab.url === url);
+              if (matchingTab) {
+                chrome.scripting.executeScript(
+                  {
+                    target: { tabId: matchingTab.id, allFrames: true },
+                    files: ['content.js'],
+                  },
+                  () => {
+                    if (chrome.runtime.lastError) {
+                      logMessage('error', `Failed to inject content script into ${url}: ${chrome.runtime.lastError.message}`);
+                    } else {
+                      logMessage('info', `Content script injected into ${url}`);
+                    }
+                  }
+                );
+              }
+            } catch (error) {
+              logMessage('error', `Error monitoring URL ${url}: ${error.message}`);
             }
           }
-        );
-      } catch (error) {
-        logMessage('error', `Error monitoring URL ${url}: ${error.message}`);
-      }
+        });
+      });
     });
   });
 }
