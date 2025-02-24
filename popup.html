@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FB Scanner</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div id="popup-container">
+    <!-- Header Section -->
+    <header>
+      <h1>FB Scanner</h1>
+    </header>
+
+    <!-- Facebook Credentials Section -->
+    <section id="credentials-section">
+      <h2>Facebook Credentials</h2>
+      <form id="credentials-form">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" placeholder="Enter your username" required>
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" placeholder="Enter your password" required>
+        
+        <button type="submit" id="save-credentials">Save Credentials</button>
+      </form>
+    </section>
+
+    <!-- Group URL Management Section -->
+    <section id="group-urls-section">
+      <h2>Manage Group URLs</h2>
+      <form id="group-url-form">
+        <label for="group-url">Group URL:</label>
+        <input type="url" id="group-url" name="group-url" placeholder="Enter group URL" required>
+        <button type="button" id="add-group-url">Add URL</button>
+      </form>
+      <ul id="group-url-list">
+        <!-- Dynamically populated list of group URLs -->
+      </ul>
+    </section>
+
+    <!-- Monitoring Controls Section -->
+    <section id="monitoring-controls-section">
+      <h2>Monitoring Controls</h2>
+      <ul id="monitoring-controls-list">
+        <!-- Dynamically populated list of monitored groups with controls -->
+      </ul>
+    </section>
+
+    <!-- Logs Section -->
+    <section id="logs-section">
+      <h2>Logs</h2>
+      <div id="logs-container">
+        <!-- Dynamically populated logs -->
+      </div>
+      <button type="button" id="clear-logs">Clear Logs</button>
+    </section>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
