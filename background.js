@@ -42,65 +42,86 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 const MONITOR_INTERVAL = 60000; // 1 minute
+let monitorTimeout;
 
-// Function to monitor Facebook group URLs
-function monitorGroupUrls() {
-  chrome.storage.local.get({ groupUrls: [] }, (data) => {
-    const groupUrls = data.groupUrls || [];
+// Debounced function to monitor Facebook group URLs
+async function monitorGroupUrls() {
+  try {
+    const { groupUrls = [] } = await chrome.storage.local.get({ groupUrls: [] });
     if (groupUrls.length === 0) {
       logMessage('warn', 'No group URLs found for monitoring');
       return;
     }
 
-    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      if (chrome.runtime.lastError) {
-        logMessage('error', `Error querying active tabs: ${chrome.runtime.lastError.message}`);
-        return;
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    const activeTabUrls = tabs.map((tab) => tab.url);
+
+    if (activeTabUrls.length === 0) {
+      logMessage('warn', 'No active tabs found in the current window');
+    }
+
+    for (const url of groupUrls) {
+      const { monitoringStates = {} } = await chrome.storage.local.get({ monitoringStates: {} });
+      const isMonitoringEnabled = monitoringStates[url];
+
+      if (isMonitoringEnabled) {
+        const matchingTab = tabs.find((tab) => tab.url === url);
+        if (matchingTab) {
+          await injectContentScriptWithRetry(matchingTab.id, url);
+        } else {
+          logMessage('warn', `No active tab matches the monitored URL: ${url}`);
+        }
       }
-
-      const activeTabUrls = tabs.map((tab) => tab.url);
-
-      if (activeTabUrls.length === 0) {
-        logMessage('warn', 'No active tabs found in the current window');
-      }
-
-      groupUrls.forEach((url) => {
-        chrome.storage.local.get({ monitoringStates: {} }, (stateData) => {
-          const monitoringStates = stateData.monitoringStates || {};
-          const isMonitoringEnabled = monitoringStates[url];
-
-          if (isMonitoringEnabled) {
-            const matchingTab = tabs.find((tab) => tab.url === url);
-            if (matchingTab) {
-              try {
-                chrome.scripting.executeScript(
-                  {
-                    target: { tabId: matchingTab.id, allFrames: true },
-                    files: ['content.js'],
-                  },
-                  () => {
-                    if (chrome.runtime.lastError) {
-                      logMessage('error', `Failed to inject content script into ${url}: ${chrome.runtime.lastError.message}`);
-                    } else {
-                      logMessage('info', `Content script injected into ${url}`);
-                    }
-                  }
-                );
-              } catch (error) {
-                logMessage('error', `Error monitoring URL ${url}: ${error.message}`);
-              }
-            } else {
-              logMessage('warn', `No active tab matches the monitored URL: ${url}`);
-            }
-          }
-        });
-      });
-    });
-  });
+    }
+  } catch (error) {
+    logMessage('error', `Error in monitorGroupUrls: ${error.message}`);
+  }
 }
 
-// Start periodic monitoring
-setInterval(monitorGroupUrls, MONITOR_INTERVAL);
+// Retry mechanism for injecting content scripts
+async function injectContentScriptWithRetry(tabId, url, retries = 3) {
+  for (let attempt = 1; attempt <= retries; attempt++) {
+    try {
+      await chrome.scripting.executeScript({
+        target: { tabId, allFrames: true },
+        files: ['content.js'],
+      });
+      logMessage('info', `Content script injected into ${url}`);
+      return;
+    } catch (error) {
+      logMessage('error', `Attempt ${attempt} failed to inject content script into ${url}: ${error.message}`);
+      if (attempt === retries) {
+        logMessage('error', `Failed to inject content script into ${url} after ${retries} attempts`);
+      }
+    }
+  }
+}
+
+// Debounce wrapper
+function debounce(func, delay) {
+  return (...args) => {
+    clearTimeout(monitorTimeout);
+    monitorTimeout = setTimeout(() => func(...args), delay);
+  };
+}
+
+// Start periodic monitoring with debouncing
+const debouncedMonitorGroupUrls = debounce(monitorGroupUrls, MONITOR_INTERVAL);
+debouncedMonitorGroupUrls();
+
+// Cleanup monitoring states on tab close
+chrome.tabs.onRemoved.addListener((tabId) => {
+  logMessage('info', `Tab ${tabId} closed. Cleaning up monitoring states.`);
+  chrome.storage.local.get({ monitoringStates: {} }, (data) => {
+    const monitoringStates = data.monitoringStates || {};
+    for (const url in monitoringStates) {
+      if (monitoringStates[url] === tabId) {
+        delete monitoringStates[url];
+      }
+    }
+    chrome.storage.local.set({ monitoringStates });
+  });
+});
 
 // Log when the service worker is installed or activated
 chrome.runtime.onInstalled.addListener(() => {

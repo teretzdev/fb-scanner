@@ -27,19 +27,16 @@ function sendMessageToBackground(type, payload) {
   });
 }
 
-/**
- * Extracts posts from the Facebook page.
- * Queries [role="article"] elements and maps them to an array of objects with 'content' and 'timestamp'.
- */
-function extractPosts() {
-  const posts = document.querySelectorAll('[role="article"]');
-  return Array.from(posts).map((post) => {
-    const content = post.innerText || post.textContent;
-    const timestamp = post.querySelector('abbr')?.getAttribute('title') || 'Unknown time';
-    return { content, timestamp };
-  });
-}
   try {
+    // Function to extract posts from the Facebook page
+    function extractPosts() {
+      const posts = document.querySelectorAll('[role="article"]');
+      return Array.from(posts).map((post) => {
+        const content = post.innerText || post.textContent;
+        const timestamp = post.querySelector('abbr')?.getAttribute('title') || 'Unknown time';
+        return { content, timestamp };
+      });
+    }
     logMessage('info', 'Interacting with the Facebook page...');
 
     // Extract the title of the page
@@ -52,15 +49,37 @@ function extractPosts() {
     logMessage('info', `Extracted ${extractedData.length} posts from the page`);
 
     // Send the extracted data to the background script
-    sendMessageToBackground('monitor', { pageTitle, posts: extractedData })
-      .then((response) => {
+    (async () => {
+      try {
+        const response = await sendMessageToBackground('monitor', { pageTitle, posts: extractedData });
         logMessage('info', `Background script response: ${JSON.stringify(response)}`);
-      })
-      .catch((error) => {
+      } catch (error) {
         logMessage('error', `Error sending extracted data to background script: ${error}`);
-      });
+      }
+    })();
+    // Set up a mutation observer to monitor changes in the DOM
+    const observer = new MutationObserver(() => {
+      try {
+        const updatedData = extractPosts();
+        logMessage('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
+        sendMessageToBackground('monitor', { pageTitle, posts: updatedData }).catch((error) => {
+          logMessage('error', `Error sending updated data to background script: ${error}`);
+        });
+      } catch (error) {
+        logMessage('error', `Error during DOM observation: ${error.message}`);
+      }
+    });
+
+    // Start observing the body for changes
+    observer.observe(document.body, { childList: true, subtree: true });
   } catch (error) {
-    logMessage('error', `Error interacting with the Facebook page: ${error.message}`);
+    if (error instanceof TypeError) {
+      logMessage('error', `TypeError encountered: ${error.message}`);
+    } else if (error instanceof ReferenceError) {
+      logMessage('error', `ReferenceError encountered: ${error.message}`);
+    } else {
+      logMessage('error', `Unexpected error: ${error.message}`);
+    }
   }
 }
 
