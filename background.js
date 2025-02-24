@@ -23,6 +23,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       // Handle error messages
       logMessage('error', `Error reported: ${message.payload}`);
       sendResponse({ status: 'success', message: 'Error logged' });
+    } else if (message.type === 'monitor') {
+      // Handle monitor messages
+      logMessage('info', `Monitor message received with payload: ${JSON.stringify(message.payload)}`);
+      sendResponse({ status: 'success', message: 'Monitor message processed' });
     } else {
       // Handle unknown message types
       logMessage('warn', `Unknown message type: ${message.type}`);
@@ -48,24 +52,49 @@ function monitorGroupUrls() {
       return;
     }
 
-    groupUrls.forEach((url) => {
-      try {
-        chrome.scripting.executeScript(
-          {
-            target: { tabId: null, allFrames: true },
-            files: ['content.js'],
-          },
-          () => {
-            if (chrome.runtime.lastError) {
-              logMessage('error', `Failed to inject content script into ${url}: ${chrome.runtime.lastError.message}`);
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      if (chrome.runtime.lastError) {
+        logMessage('error', `Error querying active tabs: ${chrome.runtime.lastError.message}`);
+        return;
+      }
+
+      const activeTabUrls = tabs.map((tab) => tab.url);
+
+      if (activeTabUrls.length === 0) {
+        logMessage('warn', 'No active tabs found in the current window');
+      }
+
+      groupUrls.forEach((url) => {
+        chrome.storage.local.get({ monitoringStates: {} }, (stateData) => {
+          const monitoringStates = stateData.monitoringStates || {};
+          const isMonitoringEnabled = monitoringStates[url];
+
+          if (isMonitoringEnabled) {
+            const matchingTab = tabs.find((tab) => tab.url === url);
+            if (matchingTab) {
+              try {
+                chrome.scripting.executeScript(
+                  {
+                    target: { tabId: matchingTab.id, allFrames: true },
+                    files: ['content.js'],
+                  },
+                  () => {
+                    if (chrome.runtime.lastError) {
+                      logMessage('error', `Failed to inject content script into ${url}: ${chrome.runtime.lastError.message}`);
+                    } else {
+                      logMessage('info', `Content script injected into ${url}`);
+                    }
+                  }
+                );
+              } catch (error) {
+                logMessage('error', `Error monitoring URL ${url}: ${error.message}`);
+              }
             } else {
-              logMessage('info', `Content script injected into ${url}`);
+              logMessage('warn', `No active tab matches the monitored URL: ${url}`);
             }
           }
-        );
-      } catch (error) {
-        logMessage('error', `Error monitoring URL ${url}: ${error.message}`);
-      }
+        });
+      });
     });
   });
 }
