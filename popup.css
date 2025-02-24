@@ -1,0 +1,130 @@
+/**
+ * popup.css
+ * Styles the popup interface for the Chrome extension, ensuring a clean and user-friendly design.
+ */
+
+/* General Reset */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+  background-color: #f9f9f9;
+  line-height: 1.5;
+}
+
+/* Container Styling */
+#popup-container {
+  width: 300px;
+  padding: 15px;
+  box-sizing: border-box;
+}
+
+/* Header Section */
+header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+header h1 {
+  font-size: 20px;
+  color: #007bff;
+  margin: 0;
+}
+
+/* Section Styling */
+section {
+  margin-bottom: 20px;
+}
+
+section h2 {
+  font-size: 16px;
+  color: #007bff;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+/* Form Styling */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+form input {
+  padding: 8px;
+  margin-bottom: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+form button {
+  padding: 10px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+form button:hover {
+  background-color: #0056b3;
+}
+
+/* Group URL List */
+#group-url-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#group-url-list li {
+  padding: 8px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 5px;
+  word-break: break-word;
+}
+
+/* Logs Section */
+#logs-container {
+  max-height: 150px;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+#logs-container div {
+  padding: 5px 0;
+  border-bottom: 1px solid #eee;
+}
+
+#logs-container div:last-child {
+  border-bottom: none;
+}
+
+/* Clear Logs Button */
+#clear-logs {
+  padding: 10px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#clear-logs:hover {
+  background-color: #a71d2a;
+}
