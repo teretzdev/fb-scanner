@@ -27,7 +27,6 @@ function sendMessageToBackground(type, payload) {
   });
 }
 
-function interactWithFacebookPage() {
 function extractPosts() {
   const posts = document.querySelectorAll('[role="article"]');
   return Array.from(posts).map((post) => {
