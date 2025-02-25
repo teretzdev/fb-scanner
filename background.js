@@ -53,7 +53,14 @@ async function monitorGroupUrls() {
       return;
     }
 
-    const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    let tabs = [];
+    try {
+      tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+    } catch (error) {
+      logMessage('error', `Failed to query active tabs: ${error.message}`);
+      return;
+    }
+
     const activeTabUrls = tabs.map((tab) => tab.url);
 
     if (activeTabUrls.length === 0) {
@@ -62,17 +69,21 @@ async function monitorGroupUrls() {
 
     for (const url of groupUrls) {
       const { monitoringStates = {} } = await chrome.storage.local.get({ monitoringStates: {} });
-      const isMonitoringEnabled = monitoringStates[url] === true;
+      try {
+        const isMonitoringEnabled = monitoringStates[url] === true;
 
-      if (isMonitoringEnabled) {
-        const matchingTab = tabs.find((tab) => tab.url === url);
-        if (matchingTab) {
-          await injectContentScriptWithRetry(matchingTab.id, url);
+        if (isMonitoringEnabled) {
+          const matchingTab = tabs.find((tab) => tab.url === url);
+          if (matchingTab) {
+            await injectContentScriptWithRetry(matchingTab.id, url);
+          } else {
+            logMessage('warn', `No active tab matches the monitored URL: ${url}`);
+          }
         } else {
-          logMessage('warn', `No active tab matches the monitored URL: ${url}`);
+          logMessage('info', `Monitoring is disabled for URL: ${url}`);
         }
-      } else {
-        logMessage('info', `Monitoring is disabled for URL: ${url}`);
+      } catch (error) {
+        logMessage('error', `Error processing URL ${url}: ${error.message}`);
       }
     }
   } catch (error) {
@@ -94,6 +105,15 @@ async function injectContentScriptWithRetry(tabId, url, retries = 3) {
       logMessage('error', `Attempt ${attempt} failed to inject content script into ${url}: ${error.message}`);
       if (attempt === retries) {
         logMessage('error', `Failed to inject content script into ${url} after ${retries} attempts`);
+        chrome.storage.local.get({ failedUrls: [] }, (data) => {
+          const failedUrls = data.failedUrls || [];
+          if (!failedUrls.includes(url)) {
+            failedUrls.push(url);
+            chrome.storage.local.set({ failedUrls }, () => {
+              logMessage('warn', `Added ${url} to failed URLs list for retry.`);
+            });
+          }
+        });
       }
     }
   }
@@ -116,12 +136,21 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   logMessage('info', `Tab ${tabId} closed. Cleaning up monitoring states.`);
   chrome.storage.local.get({ monitoringStates: {} }, (data) => {
     const monitoringStates = data.monitoringStates || {};
+    let updated = false;
+
     for (const url in monitoringStates) {
       if (monitoringStates[url] === tabId) {
         delete monitoringStates[url];
+        updated = true;
+        logMessage('info', `Removed monitoring state for URL: ${url}`);
       }
     }
-    chrome.storage.local.set({ monitoringStates });
+
+    if (updated) {
+      chrome.storage.local.set({ monitoringStates }, () => {
+        logMessage('info', 'Monitoring states updated after tab closure.');
+      });
+    }
   });
 });
 

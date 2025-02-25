@@ -28,16 +28,17 @@ function sendMessageToBackground(type, payload) {
 }
 
 function interactWithFacebookPage() {
+function extractPosts() {
+  const posts = document.querySelectorAll('[role="article"]');
+  return Array.from(posts).map((post) => {
+    const content = post.innerText || post.textContent;
+    const timestamp = post.querySelector('abbr')?.getAttribute('title') || 'Unknown time';
+    return { content, timestamp };
+  });
+}
+
+function interactWithFacebookPage() {
   try {
-    // Function to extract posts from the Facebook page
-    function extractPosts() {
-      const posts = document.querySelectorAll('[role="article"]');
-      return Array.from(posts).map((post) => {
-        const content = post.innerText || post.textContent;
-        const timestamp = post.querySelector('abbr')?.getAttribute('title') || 'Unknown time';
-        return { content, timestamp };
-      });
-    }
     logMessage('info', 'Interacting with the Facebook page...');
 
     // Extract the title of the page
@@ -58,21 +59,6 @@ function interactWithFacebookPage() {
         logMessage('error', `Error sending extracted data to background script: ${error}`);
       }
     })();
-    // Set up a mutation observer to monitor changes in the DOM
-    const observer = new MutationObserver(() => {
-      try {
-        const updatedData = extractPosts();
-        logMessage('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
-        sendMessageToBackground('monitor', { pageTitle, posts: updatedData }).catch((error) => {
-          logMessage('error', `Error sending updated data to background script: ${error}`);
-        });
-      } catch (error) {
-        logMessage('error', `Error during DOM observation: ${error.message}`);
-      }
-    });
-
-    // Start observing the body for changes
-    observer.observe(document.body, { childList: true, subtree: true });
   } catch (error) {
     if (error instanceof TypeError) {
       logMessage('error', `TypeError encountered: ${error.message}`);
@@ -82,6 +68,22 @@ function interactWithFacebookPage() {
       logMessage('error', `Unexpected error: ${error.message}`);
     }
   }
+
+  // Set up a mutation observer to monitor changes in the DOM
+  const observer = new MutationObserver(() => {
+    try {
+      const updatedData = extractPosts();
+      logMessage('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
+      sendMessageToBackground('monitor', { pageTitle, posts: updatedData }).catch((error) => {
+        logMessage('error', `Error sending updated data to background script: ${error}`);
+      });
+    } catch (error) {
+      logMessage('error', `Error during DOM observation: ${error.message}`);
+    }
+  });
+
+  // Start observing the body for changes
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 // Handle uncaught exceptions
