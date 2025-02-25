@@ -62,7 +62,7 @@ async function monitorGroupUrls() {
 
     for (const url of groupUrls) {
       const { monitoringStates = {} } = await chrome.storage.local.get({ monitoringStates: {} });
-      const isMonitoringEnabled = monitoringStates[url];
+      const isMonitoringEnabled = monitoringStates[url] === true;
 
       if (isMonitoringEnabled) {
         const matchingTab = tabs.find((tab) => tab.url === url);
@@ -71,6 +71,8 @@ async function monitorGroupUrls() {
         } else {
           logMessage('warn', `No active tab matches the monitored URL: ${url}`);
         }
+      } else {
+        logMessage('info', `Monitoring is disabled for URL: ${url}`);
       }
     }
   } catch (error) {

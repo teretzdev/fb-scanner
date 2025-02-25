@@ -27,6 +27,7 @@ function sendMessageToBackground(type, payload) {
   });
 }
 
+function interactWithFacebookPage() {
   try {
     // Function to extract posts from the Facebook page
     function extractPosts() {
