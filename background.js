@@ -4,42 +4,33 @@
  * Includes enhanced error handling and detailed logs.
  */
 
+const express = require('express');
 const { log } = require('./logging/clientLogger');
+const storage = require('./storage');
 
-// Listener for messages from content scripts or popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+const router = express.Router();
+
+// Route to handle monitoring requests
+router.post('/monitor', async (req, res) => {
   try {
-    log('info', `Received message: ${JSON.stringify(message)} from ${sender.url || 'unknown sender'}`);
+    const { groupUrls } = req.body;
 
-    if (message.type === 'log') {
-      // Log messages sent from content scripts or popup
-      log('info', `Log from extension: ${message.payload}`);
-      sendResponse({ status: 'success', message: 'Log received' });
-    } else if (message.type === 'error') {
-      // Handle error messages
-      log('error', `Error reported: ${message.payload}`);
-      sendResponse({ status: 'success', message: 'Error logged' });
-    } else if (message.type === 'monitor') {
-      // Handle monitor messages
-      log('info', `Monitor message received with payload: ${JSON.stringify(message.payload)}`);
-      sendResponse({ status: 'success', message: 'Monitor message processed' });
-    } else {
-      // Handle unknown message types
-      log('warn', `Unknown message type: ${message.type}`);
-      sendResponse({ status: 'error', message: 'Unknown message type' });
+    if (!Array.isArray(groupUrls) || groupUrls.length === 0) {
+      log('warn', 'No group URLs provided for monitoring');
+      return res.status(400).json({ success: false, message: 'No group URLs provided' });
     }
+
+    log('info', `Received monitoring request for URLs: ${JSON.stringify(groupUrls)}`);
+    await storage.saveGroupUrls(groupUrls);
+
+    res.status(200).json({ success: true, message: 'Monitoring started' });
   } catch (error) {
-    try {
-      log('error', `Exception in message handler: ${error.message}`);
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
-    }
-    sendResponse({ status: 'error', message: 'Internal error occurred' });
+    log('error', `Error in /monitor route: ${error.message}`);
+    res.status(500).json({ success: false, message: 'Internal server error' });
   }
-
-  // Indicate that the response will be sent asynchronously
-  return true;
 });
+
+module.exports = router;
 
 const MONITOR_INTERVAL = 60000; // 1 minute
 let monitorTimeout;
@@ -47,41 +38,16 @@ let monitorTimeout;
 // Debounced function to monitor Facebook group URLs
 async function monitorGroupUrls() {
   try {
-    const { groupUrls = [] } = await chrome.storage.local.get({ groupUrls: [] });
-    if (groupUrls.length === 0) {
+    const groupUrls = await storage.getGroupUrls();
+    if (!groupUrls || groupUrls.length === 0) {
       log('warn', 'No group URLs found for monitoring');
       return;
     }
 
-    let tabs = [];
-    try {
-      tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    } catch (error) {
-      log('error', `Failed to query active tabs: ${error.message}`);
-      return;
-    }
-
-    const activeTabUrls = tabs.map((tab) => tab.url);
-
-    if (activeTabUrls.length === 0) {
-      log('warn', 'No active tabs found in the current window');
-    }
-
     for (const url of groupUrls) {
-      const { monitoringStates = {} } = await chrome.storage.local.get({ monitoringStates: {} });
       try {
-        const isMonitoringEnabled = monitoringStates[url] === true;
-
-        if (isMonitoringEnabled) {
-          const matchingTab = tabs.find((tab) => tab.url === url);
-          if (matchingTab) {
-            await injectContentScriptWithRetry(matchingTab.id, url);
-          } else {
-            log('warn', `No active tab matches the monitored URL: ${url}`);
-          }
-        } else {
-          log('info', `Monitoring is disabled for URL: ${url}`);
-        }
+        log('info', `Monitoring URL: ${url}`);
+        // Add scanning logic here if needed
       } catch (error) {
         log('error', `Error processing URL ${url}: ${error.message}`);
       }
@@ -182,10 +148,10 @@ chrome.runtime.onStartup.addListener(() => {
  * Global error handlers for uncaught exceptions and unhandled promise rejections.
  * Ensures that all unexpected errors are logged for debugging purposes.
  */
-window.addEventListener('error', (event) => {
-  log('error', `Uncaught error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
+process.on('uncaughtException', (error) => {
+  log('error', `Uncaught exception: ${error.message}`);
 });
 
-window.addEventListener('unhandledrejection', (event) => {
-  log('error', `Unhandled promise rejection: ${event.reason}`);
+process.on('unhandledRejection', (reason) => {
+  log('error', `Unhandled promise rejection: ${reason}`);
 });

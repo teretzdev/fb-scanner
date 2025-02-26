@@ -75,37 +75,29 @@ router.delete('/', async (req, res) => {
       });
     }
 
-    try {
-      // Retrieve current group URLs
-      const groupUrls = await storage.getGroupUrls();
+    // Retrieve current group URLs
+    const groupUrls = await storage.getGroupUrls();
 
-      // Check if the URL exists in the list
-      if (!groupUrls.includes(url)) {
-        serverLogger.warn(`Group URL not found: ${url}`);
-        return res.status(404).json({
-          success: false,
-          message: 'Group URL not found in the list',
-          groupUrls,
-        });
-      }
-
-      // Remove the URL and update the storage
-      const updatedGroupUrls = groupUrls.filter((groupUrl) => groupUrl !== url);
-      await storage.saveGroupUrls(updatedGroupUrls);
-
-      serverLogger.info(`Group URL removed successfully: ${url}`);
-      return res.status(200).json({
-        success: true,
-        message: 'Group URL removed successfully',
-        groupUrls: updatedGroupUrls,
-      });
-    } catch (error) {
-      serverLogger.error(`Error removing group URL: ${error.message}`);
-      return res.status(500).json({
+    // Check if the URL exists in the list
+    if (!groupUrls.includes(url)) {
+      serverLogger.warn(`Group URL not found: ${url}`);
+      return res.status(404).json({
         success: false,
-        message: 'An error occurred while removing the group URL',
+        message: 'Group URL not found in the list',
+        groupUrls,
       });
     }
+
+    // Remove the URL and update the storage
+    const updatedGroupUrls = groupUrls.filter((groupUrl) => groupUrl !== url);
+    await storage.saveGroupUrls(updatedGroupUrls);
+
+    serverLogger.info(`Group URL removed successfully: ${url}`);
+    res.status(200).json({
+      success: true,
+      message: 'Group URL removed successfully',
+      groupUrls: updatedGroupUrls,
+    });
   } catch (error) {
     serverLogger.error(`Error removing group URL: ${error.message}`);
     res.status(500).json({

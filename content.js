@@ -4,103 +4,44 @@
  * Includes detailed logging and error handling.
  */
 
+const puppeteer = require('puppeteer');
 const { log } = require('./logging/clientLogger');
 
-// Function to send messages to the background script
-function sendMessageToBackground(type, payload) {
-  return new Promise((resolve, reject) => {
-    try {
-      chrome.runtime.sendMessage({ type, payload }, (response) => {
-        if (chrome.runtime.lastError) {
-          reject(chrome.runtime.lastError.message);
-        } else {
-          resolve(response);
-        }
-      });
-    } catch (error) {
-      reject(error.message);
-    }
-  });
-}
+/**
+ * Extracts posts from a Facebook page using Puppeteer.
+ * @param {string} url - The URL of the Facebook page to scan.
+ * @returns {Promise<Array>} - A promise that resolves to an array of extracted posts.
+ */
+async function extractPostsFromFacebook(url) {
+  log('info', `Starting Puppeteer to extract posts from: ${url}`);
+  const browser = await puppeteer.launch({ headless: true });
+  const page = await browser.newPage();
 
-function extractPosts() {
-  const posts = document.querySelectorAll('[role="article"]');
-  return Array.from(posts).map((post) => {
-    const content = post.innerText || post.textContent;
-    const timestamp = post.querySelector('abbr')?.getAttribute('title') || 'Unknown time';
-    return { content, timestamp };
-  });
-}
-
-function interactWithFacebookPage() {
   try {
-    log('info', 'Interacting with the Facebook page...');
+    await page.goto(url, { waitUntil: 'networkidle2' });
+    log('info', `Navigated to: ${url}`);
 
-    // Extract the title of the page
-    const pageTitle = document.title;
-    log('info', `Page title: ${pageTitle}`);
-
-    // Extract posts from the page
-    const extractedData = extractPosts();
-
-    log('info', `Extracted ${extractedData.length} posts from the page`);
-
-    // Send the extracted data to the background script
-    (async () => {
-      try {
-        const response = await sendMessageToBackground('monitor', { pageTitle, posts: extractedData });
-        log('info', `Background script response: ${JSON.stringify(response)}`);
-      } catch (error) {
-        log('error', `Error sending extracted data to background script: ${error}`);
-      }
-    })();
-  } catch (error) {
-    if (error instanceof TypeError) {
-      log('error', `TypeError encountered: ${error.message}`);
-    } else if (error instanceof ReferenceError) {
-      log('error', `ReferenceError encountered: ${error.message}`);
-    } else {
-      log('error', `Unexpected error: ${error.message}`);
-    }
-  }
-
-  // Set up a mutation observer to monitor changes in the DOM
-  let pageTitle = document.title; // Ensure pageTitle is defined and accessible
-  const observer = new MutationObserver(() => {
-    try {
-      pageTitle = document.title; // Update pageTitle if the DOM changes
-      const updatedData = extractPosts();
-      log('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
-      sendMessageToBackground('monitor', { pageTitle, posts: updatedData }).catch((error) => {
-        log('error', `Error sending updated data to background script: ${error}`);
+    // Extract posts using page.evaluate
+    const posts = await page.evaluate(() => {
+      const postElements = document.querySelectorAll('[role="article"]');
+      return Array.from(postElements).map((post) => {
+        const content = post.innerText || post.textContent;
+        const timestamp = post.querySelector('abbr, time')?.getAttribute('title') || 'Unknown time';
+        return { content, timestamp };
       });
-    } catch (error) {
-      log('error', `Error during DOM observation: ${error.message}`);
-    }
-  });
+    });
 
-  // Start observing the body for changes
-  observer.observe(document.body, { childList: true, subtree: true });
+    log('info', `Extracted ${posts.length} posts from the page`);
+    return posts;
+  } catch (error) {
+    log('error', `Error extracting posts: ${error.message}`);
+    throw error;
+  } finally {
+    await browser.close();
+    log('info', 'Browser closed');
+  }
 }
 
-// Handle uncaught exceptions
-window.addEventListener('error', (event) => {
-  log('error', `Uncaught error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
-  sendMessageToBackground('error', `Uncaught error: ${event.message}`).catch((error) => {
-    log('error', `Failed to log uncaught error to background script: ${error}`);
-  });
-});
-
-// Handle unhandled promise rejections
-window.addEventListener('unhandledrejection', (event) => {
-  log('error', `Unhandled promise rejection: ${event.reason}`);
-  sendMessageToBackground('error', `Unhandled promise rejection: ${event.reason}`).catch((error) => {
-    log('error', `Failed to log unhandled rejection to background script: ${error}`);
-  });
-});
-
-// Execute the main function when the DOM is fully loaded
-document.addEventListener('DOMContentLoaded', () => {
-  log('info', 'Content script loaded and DOM fully loaded');
-  interactWithFacebookPage();
-});
+module.exports = {
+  extractPostsFromFacebook,
+};

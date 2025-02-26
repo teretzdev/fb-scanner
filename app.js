@@ -31,6 +31,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Serve static files from the "public" directory
 app.use(express.static('public'));
 
+const background = require('./background');
 const healthRoutes = require('./routes/health');
 const credentialsRoutes = require('./routes/credentials');
 const groupUrlsRoutes = require('./routes/groupUrls');
@@ -55,4 +56,8 @@ app.use((err, req, res, next) => {
 // Start the server
 app.listen(PORT, () => {
   serverLogger.info(`Server is running on http://localhost:${PORT}`);
+
+  // Initialize monitoring and scanning functionality
+  background.initializeMonitoring();
+  serverLogger.info('Background monitoring and scanning functionality initialized.');
 });

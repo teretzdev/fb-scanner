@@ -151,7 +151,11 @@ async function saveLog(message) {
       const data = await fs.readFile(LOGS_FILE, 'utf-8');
       logs = JSON.parse(data);
     } catch (error) {
-      if (error.code !== 'ENOENT') throw error;
+      if (error.code === 'ENOENT') {
+        logs = []; // Initialize logs if file does not exist
+      } else {
+        throw error;
+      }
     }
 
     const timestamp = new Date().toISOString();
