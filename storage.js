@@ -17,7 +17,7 @@ const LOGS_FILE = config.LOGS_FILE;
 // Ensure the data directory exists
 async function ensureDataDirectory() {
   try {
-    await fs.mkdir(DATA_DIR, { recursive: true });
+    await fs.mkdir(config.DATA_DIRECTORY, { recursive: true });
     logger.info('Data directory ensured');
   } catch (error) {
     logger.error(`Failed to ensure data directory: ${error.message}`);
