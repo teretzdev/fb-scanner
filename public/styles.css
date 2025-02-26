@@ -1,0 +1,169 @@
+/**
+ * styles.css
+ * Styles the web interface for the standalone Facebook scanning application.
+ * Adapted from the popup.css used in the Chrome extension.
+ */
+
+/* General Reset */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+  background-color: #f9f9f9;
+  line-height: 1.5;
+}
+
+/* Container Styling */
+#app-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+/* Header Section */
+header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+header h1 {
+  font-size: 24px;
+  color: #007bff;
+  margin: 0;
+}
+
+/* Section Styling */
+section {
+  margin-bottom: 30px;
+}
+
+section h2 {
+  font-size: 18px;
+  color: #007bff;
+  margin-bottom: 15px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 5px;
+}
+
+/* Form Styling */
+form {
+  display: flex;
+  flex-direction: column;
+}
+
+form label {
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+form input {
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+form button {
+  padding: 12px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+form button:hover {
+  background-color: #0056b3;
+}
+
+/* Group URL List */
+#group-url-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#group-url-list li {
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+
+/* Monitoring Controls Section */
+#monitoring-controls-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+#monitoring-controls-list li {
+  padding: 10px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+#monitoring-controls-list button {
+  padding: 8px 12px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+#monitoring-controls-list button:hover {
+  background-color: #218838;
+}
+
+#monitoring-controls-list .monitoring-status {
+  font-size: 12px;
+  color: #6c757d;
+}
+
+/* Logs Section */
+#logs-container {
+  max-height: 200px;
+  overflow-y: auto;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 15px;
+  margin-bottom: 15px;
+}
+
+#logs-container div {
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+#logs-container div:last-child {
+  border-bottom: none;
+}
+
+/* Clear Logs Button */
+#clear-logs {
+  padding: 12px;
+  background-color: #dc3545;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+#clear-logs:hover {
+  background-color: #a71d2a;
+}
