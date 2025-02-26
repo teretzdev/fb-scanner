@@ -7,6 +7,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const serverLogger = require('./logging/serverLogger');
+const cors = require('cors');
 
 // Initialize Express app
 const app = express();
@@ -25,11 +26,17 @@ app.use((req, res, next) => {
   next();
 });
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Serve static files from the "public" directory
 app.use(express.static('public'));
+app.use(express.static('frontend/build'));
+
+app.get('*', (req, res) => {
+  res.sendFile(__dirname + '/frontend/build/index.html');
+});
 
 const healthRoutes = require('./routes/health');
 const credentialsRoutes = require('./routes/credentials');
