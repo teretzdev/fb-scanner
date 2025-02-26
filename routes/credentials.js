@@ -39,6 +39,8 @@ router.post('/', async (req, res) => {
   }
 });
 
+module.exports = router;
+
 // GET /api/credentials - Retrieve Facebook credentials
 router.get('/', async (req, res) => {
   try {
