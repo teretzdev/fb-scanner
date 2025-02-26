@@ -31,7 +31,7 @@ function formatTimestamp(timestamp) {
     const date = new Date(timestamp);
     return date.toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   } catch (error) {
-    logger.error(`Error formatting timestamp: ${error.message}`);
+    serverLogger.error(`Error formatting timestamp: ${error.message}`);
     return 'Invalid date';
   }
 }
@@ -43,7 +43,7 @@ function formatTimestamp(timestamp) {
  * @returns {Object} - A standardized error response object.
  */
 function handleError(error, context = 'Unknown context') {
-  logger.error(`Error in ${context}: ${error.message}`);
+  serverLogger.error(`Error in ${context}: ${error.message}`);
   return {
     success: false,
     message: `An error occurred: ${error.message}`,

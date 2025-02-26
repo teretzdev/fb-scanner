@@ -25,6 +25,17 @@ async function ensureDataDirectory() {
   }
 }
 
+async function saveGroupUrls(groupUrls) {
+  try {
+    await ensureDataDirectory();
+    await fs.writeFile(GROUP_URLS_FILE, JSON.stringify(groupUrls, null, 2));
+    serverLogger.info('Group URLs saved successfully', { file: GROUP_URLS_FILE });
+  } catch (error) {
+    serverLogger.error('Failed to save group URLs', { error: error.message, file: GROUP_URLS_FILE });
+    throw error;
+  }
+}
+
 // Remove a group URL
 async function removeGroupUrl(url) {
   try {
@@ -48,7 +59,7 @@ async function removeGroupUrl(url) {
 
     // Remove the URL and save the updated list
     groupUrls = groupUrls.filter((groupUrl) => groupUrl !== url);
-    await fs.writeFile(GROUP_URLS_FILE, JSON.stringify(groupUrls, null, 2));
+    await saveGroupUrls(groupUrls);
     serverLogger.info('Group URL removed', { url });
     return groupUrls;
   } catch (error) {
@@ -178,4 +189,5 @@ module.exports = {
   saveLog,
   getLogs,
   removeGroupUrl,
+  saveGroupUrls,
 };

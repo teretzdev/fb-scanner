@@ -4,7 +4,7 @@
  * Includes enhanced error handling and detailed logs.
  */
 
-const { log } = require('./logging/clientLogger');
+import { log } from './logging/clientLogger.js';
 
 // Listener for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -29,7 +29,11 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
       sendResponse({ status: 'error', message: 'Unknown message type' });
     }
   } catch (error) {
-    log('error', `Exception in message handler: ${error.message}`);
+    try {
+      log('error', `Exception in message handler: ${error.message}`);
+    } catch (logError) {
+      console.error('Failed to log error:', logError);
+    }
     sendResponse({ status: 'error', message: 'Internal error occurred' });
   }
 
@@ -87,7 +91,11 @@ async function monitorGroupUrls() {
   }
 }
 
-// Retry mechanism for injecting content scripts
+/**
+ * Retry mechanism for injecting content scripts into a tab.
+ * This function attempts to inject the content script multiple times
+ * in case of failures, and logs errors for each failed attempt.
+ */
 async function injectContentScriptWithRetry(tabId, url, retries = 3) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     try {
@@ -115,7 +123,11 @@ async function injectContentScriptWithRetry(tabId, url, retries = 3) {
   }
 }
 
-// Debounce wrapper
+/**
+ * Debounce wrapper to delay the execution of a function.
+ * Ensures that the function is executed only after the specified delay
+ * has passed since the last invocation.
+ */
 function debounce(func, delay) {
   return (...args) => {
     clearTimeout(monitorTimeout);
@@ -127,7 +139,11 @@ function debounce(func, delay) {
 const debouncedMonitorGroupUrls = debounce(monitorGroupUrls, MONITOR_INTERVAL);
 debouncedMonitorGroupUrls();
 
-// Cleanup monitoring states on tab close
+/**
+ * Listener for tab closure events.
+ * Cleans up monitoring states associated with the closed tab
+ * to ensure proper resource management.
+ */
 chrome.tabs.onRemoved.addListener((tabId) => {
   log('info', `Tab ${tabId} closed. Cleaning up monitoring states.`);
   chrome.storage.local.get({ monitoringStates: {} }, (data) => {
@@ -150,7 +166,10 @@ chrome.tabs.onRemoved.addListener((tabId) => {
   });
 });
 
-// Log when the service worker is installed or activated
+/**
+ * Log events when the service worker is installed or the extension starts up.
+ * Provides visibility into the lifecycle of the extension.
+ */
 chrome.runtime.onInstalled.addListener(() => {
   log('info', 'Extension installed or updated');
 });
@@ -159,7 +178,10 @@ chrome.runtime.onStartup.addListener(() => {
   log('info', 'Extension started');
 });
 
-// Handle uncaught exceptions in the background script
+/**
+ * Global error handlers for uncaught exceptions and unhandled promise rejections.
+ * Ensures that all unexpected errors are logged for debugging purposes.
+ */
 window.addEventListener('error', (event) => {
   log('error', `Uncaught error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
 });
