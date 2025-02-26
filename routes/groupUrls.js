@@ -84,6 +84,7 @@ router.delete('/', async (req, res) => {
       return res.status(404).json({
         success: false,
         message: 'Group URL not found',
+        groupUrls,
       });
     }
 

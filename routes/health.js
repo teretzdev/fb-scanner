@@ -10,7 +10,7 @@ const router = express.Router();
 router.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Server is running properly',
+    message: 'server running',
     timestamp: new Date().toISOString(),
   });
 });
