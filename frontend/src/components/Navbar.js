@@ -10,9 +10,9 @@ import '../styles/App.css';
 
 function Navbar() {
   return (
-    <nav className="navbar">
+    <nav className="navbar" aria-label="Main Navigation">
       <div className="navbar-container">
-        <Link to="/" className="navbar-logo">
+        <Link to="/" className="navbar-logo" title="Go to Home">
           FB Scanner
         </Link>
         <ul className="navbar-links">

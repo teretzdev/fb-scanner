@@ -142,6 +142,7 @@ ul {
 .profile-scanner-form button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
+  transition: background-color 0.3s;
 }
 
 .profile-scanner-form button:hover:not(:disabled) {
