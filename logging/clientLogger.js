@@ -6,8 +6,8 @@
 
 // Define log levels and their corresponding colors
 const logLevels = {
-  error: 'color: red;',
-  warn: 'color: orange;',
+  error: 'color: red; font-weight: bold;',
+  warn: 'color: orange; font-weight: bold;',
   info: 'color: green;',
   debug: 'color: blue;',
 };
@@ -24,13 +24,25 @@ function getTimestamp() {
  * @param {string} message - The message to log.
  * @param {Object} [meta={}] - Additional metadata to include in the log.
  */
+/**
+ * Logs messages in the browser console with custom formatting.
+ * Supports log levels: error, warn, info, and debug.
+ * @param {string} level - The log level (error, warn, info, debug).
+ * @param {string} message - The message to log.
+ * @param {Object} [meta={}] - Additional metadata to include in the log.
+ */
 function log(level, message, meta = {}) {
   if (!logLevels[level]) {
-    console.error(`Invalid log level: ${level}`);
+    console.error(`%c[${getTimestamp()}] [ERROR] Invalid log level: ${level}`, logLevels.error);
     return;
   }
 
-  const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
+  if (typeof message !== 'string') {
+    console.error(`%c[${getTimestamp()}] [ERROR] Log message must be a string`, logLevels.error);
+    return;
+  }
+
+  const metaString = Object.keys(meta).length ? JSON.stringify(meta, null, 2) : '';
   console.log(
     `%c[${getTimestamp()}] [${level.toUpperCase()}] ${message} ${metaString}`,
     logLevels[level]

@@ -4,7 +4,7 @@
  * Includes detailed logging and error handling.
  */
 
-const { log } = require('./logging/clientLogger');
+import { log } from './logging/clientLogger.js';
 
 // Save Facebook credentials to Chrome storage
 // TODO: Consider encrypting credentials before storing them for enhanced security.
@@ -155,69 +155,81 @@ function updateGroupUrlList(groupUrls) {
   groupUrlList.innerHTML = ''; // Clear the list
 
   groupUrls.forEach((url) => {
-    const listItem = document.createElement('li');
-    listItem.textContent = url;
-
-    // Create a container for the URL and controls
-    const container = document.createElement('div');
-    container.className = 'group-url-container';
-
-    // Create a span for the URL
-    const urlSpan = document.createElement('span');
-    urlSpan.textContent = url;
-    container.appendChild(urlSpan);
-
-    // Create a button to toggle monitoring
-    const toggleButton = document.createElement('button');
-    toggleButton.textContent = 'Enable Monitoring';
-    toggleButton.className = 'toggle-monitoring';
-    container.appendChild(toggleButton);
-
-    // Create a span to display the monitoring status
-    const statusSpan = document.createElement('span');
-    statusSpan.className = 'monitoring-status';
-    statusSpan.textContent = 'Paused';
-    container.appendChild(statusSpan);
-
-    // Append the container to the list item
-    listItem.appendChild(container);
+    const listItem = createGroupUrlListItem(url);
     groupUrlList.appendChild(listItem);
-
-    // Load the current monitoring state from storage
-    chrome.storage.local.get({ monitoringStates: {} }, (data) => {
-      const monitoringStates = data.monitoringStates || {};
-      if (monitoringStates[url]) {
-        toggleButton.textContent = 'Disable Monitoring';
-        statusSpan.textContent = 'Monitoring';
-      }
-    });
-
-    // Add event listener to toggle monitoring
-    toggleButton.addEventListener('click', () => {
-      chrome.storage.local.get({ monitoringStates: {} }, (data) => {
-        const monitoringStates = data.monitoringStates || {};
-        const isMonitoring = monitoringStates[url];
-
-        // Toggle the monitoring state
-        monitoringStates[url] = !isMonitoring;
-        try {
-          chrome.storage.local.set({ monitoringStates }, () => {
-            if (monitoringStates[url]) {
-              toggleButton.textContent = 'Disable Monitoring';
-              statusSpan.textContent = 'Monitoring';
-            } else {
-              toggleButton.textContent = 'Enable Monitoring';
-              statusSpan.textContent = 'Paused';
-            }
-          });
-        } catch (error) {
-          displayLog(`Error toggling monitoring state for ${url}: ${error.message}`);
-        }
-      });
-    });
   });
 
   log('info', 'Group URL list updated');
+}
+
+function createGroupUrlListItem(url) {
+  const listItem = document.createElement('li');
+
+  // Create a container for the URL and controls
+  const container = document.createElement('div');
+  container.className = 'group-url-container';
+
+  // Create a span for the URL
+  const urlSpan = document.createElement('span');
+  urlSpan.textContent = url;
+  container.appendChild(urlSpan);
+
+  // Create a button to toggle monitoring
+  const toggleButton = document.createElement('button');
+  toggleButton.textContent = 'Enable Monitoring';
+  toggleButton.className = 'toggle-monitoring';
+  container.appendChild(toggleButton);
+
+  // Create a span to display the monitoring status
+  const statusSpan = document.createElement('span');
+  statusSpan.className = 'monitoring-status';
+  statusSpan.textContent = 'Paused';
+  container.appendChild(statusSpan);
+
+  // Append the container to the list item
+  listItem.appendChild(container);
+
+  // Initialize monitoring state and add event listener
+  initializeMonitoringState(url, toggleButton, statusSpan);
+
+  return listItem;
+}
+
+function initializeMonitoringState(url, toggleButton, statusSpan) {
+  chrome.storage.local.get({ monitoringStates: {} }, (data) => {
+    const monitoringStates = data.monitoringStates || {};
+    const isMonitoring = monitoringStates[url];
+
+    // Set initial state
+    if (isMonitoring) {
+      toggleButton.textContent = 'Disable Monitoring';
+      statusSpan.textContent = 'Monitoring';
+    }
+
+    // Add event listener to toggle monitoring
+    toggleButton.addEventListener('click', () => {
+      toggleMonitoringState(url, toggleButton, statusSpan);
+    });
+  });
+}
+
+function toggleMonitoringState(url, toggleButton, statusSpan) {
+  chrome.storage.local.get({ monitoringStates: {} }, (data) => {
+    const monitoringStates = data.monitoringStates || {};
+    const isMonitoring = monitoringStates[url];
+
+    // Toggle the monitoring state
+    monitoringStates[url] = !isMonitoring;
+    chrome.storage.local.set({ monitoringStates }, () => {
+      if (monitoringStates[url]) {
+        toggleButton.textContent = 'Disable Monitoring';
+        statusSpan.textContent = 'Monitoring';
+      } else {
+        toggleButton.textContent = 'Enable Monitoring';
+        statusSpan.textContent = 'Paused';
+      }
+    });
+  });
 }
 
 // Initialize the popup when the DOM is fully loaded

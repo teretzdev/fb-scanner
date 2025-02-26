@@ -4,7 +4,7 @@
  * Includes detailed logging and error handling.
  */
 
-const { log } = require('./logging/clientLogger');
+import { log } from './logging/clientLogger';
 
 // Function to send messages to the background script
 function sendMessageToBackground(type, payload) {
@@ -65,8 +65,10 @@ function interactWithFacebookPage() {
   }
 
   // Set up a mutation observer to monitor changes in the DOM
+  let pageTitle = document.title; // Ensure pageTitle is defined and accessible
   const observer = new MutationObserver(() => {
     try {
+      pageTitle = document.title; // Update pageTitle if the DOM changes
       const updatedData = extractPosts();
       log('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
       sendMessageToBackground('monitor', { pageTitle, posts: updatedData }).catch((error) => {
