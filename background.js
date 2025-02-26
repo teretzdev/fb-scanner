@@ -4,36 +4,32 @@
  * Includes enhanced error handling and detailed logs.
  */
 
-// Utility function for logging messages with timestamps
-function logMessage(level, message) {
-  const timestamp = new Date().toISOString();
-  console[level](`[${timestamp}] ${message}`);
-}
+const { log } = require('./logging/clientLogger');
 
 // Listener for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   try {
-    logMessage('info', `Received message: ${JSON.stringify(message)} from ${sender.url || 'unknown sender'}`);
+    log('info', `Received message: ${JSON.stringify(message)} from ${sender.url || 'unknown sender'}`);
 
     if (message.type === 'log') {
       // Log messages sent from content scripts or popup
-      logMessage('info', `Log from extension: ${message.payload}`);
+      log('info', `Log from extension: ${message.payload}`);
       sendResponse({ status: 'success', message: 'Log received' });
     } else if (message.type === 'error') {
       // Handle error messages
-      logMessage('error', `Error reported: ${message.payload}`);
+      log('error', `Error reported: ${message.payload}`);
       sendResponse({ status: 'success', message: 'Error logged' });
     } else if (message.type === 'monitor') {
       // Handle monitor messages
-      logMessage('info', `Monitor message received with payload: ${JSON.stringify(message.payload)}`);
+      log('info', `Monitor message received with payload: ${JSON.stringify(message.payload)}`);
       sendResponse({ status: 'success', message: 'Monitor message processed' });
     } else {
       // Handle unknown message types
-      logMessage('warn', `Unknown message type: ${message.type}`);
+      log('warn', `Unknown message type: ${message.type}`);
       sendResponse({ status: 'error', message: 'Unknown message type' });
     }
   } catch (error) {
-    logMessage('error', `Exception in message handler: ${error.message}`);
+    log('error', `Exception in message handler: ${error.message}`);
     sendResponse({ status: 'error', message: 'Internal error occurred' });
   }
 
@@ -49,7 +45,7 @@ async function monitorGroupUrls() {
   try {
     const { groupUrls = [] } = await chrome.storage.local.get({ groupUrls: [] });
     if (groupUrls.length === 0) {
-      logMessage('warn', 'No group URLs found for monitoring');
+      log('warn', 'No group URLs found for monitoring');
       return;
     }
 
@@ -57,14 +53,14 @@ async function monitorGroupUrls() {
     try {
       tabs = await chrome.tabs.query({ active: true, currentWindow: true });
     } catch (error) {
-      logMessage('error', `Failed to query active tabs: ${error.message}`);
+      log('error', `Failed to query active tabs: ${error.message}`);
       return;
     }
 
     const activeTabUrls = tabs.map((tab) => tab.url);
 
     if (activeTabUrls.length === 0) {
-      logMessage('warn', 'No active tabs found in the current window');
+      log('warn', 'No active tabs found in the current window');
     }
 
     for (const url of groupUrls) {
@@ -77,17 +73,17 @@ async function monitorGroupUrls() {
           if (matchingTab) {
             await injectContentScriptWithRetry(matchingTab.id, url);
           } else {
-            logMessage('warn', `No active tab matches the monitored URL: ${url}`);
+            log('warn', `No active tab matches the monitored URL: ${url}`);
           }
         } else {
-          logMessage('info', `Monitoring is disabled for URL: ${url}`);
+          log('info', `Monitoring is disabled for URL: ${url}`);
         }
       } catch (error) {
-        logMessage('error', `Error processing URL ${url}: ${error.message}`);
+        log('error', `Error processing URL ${url}: ${error.message}`);
       }
     }
   } catch (error) {
-    logMessage('error', `Error in monitorGroupUrls: ${error.message}`);
+    log('error', `Error in monitorGroupUrls: ${error.message}`);
   }
 }
 
@@ -99,18 +95,18 @@ async function injectContentScriptWithRetry(tabId, url, retries = 3) {
         target: { tabId, allFrames: true },
         files: ['content.js'],
       });
-      logMessage('info', `Content script injected into ${url}`);
+      log('info', `Content script injected into ${url}`);
       return;
     } catch (error) {
-      logMessage('error', `Attempt ${attempt} failed to inject content script into ${url}: ${error.message}`);
+      log('error', `Attempt ${attempt} failed to inject content script into ${url}: ${error.message}`);
       if (attempt === retries) {
-        logMessage('error', `Failed to inject content script into ${url} after ${retries} attempts`);
+        log('error', `Failed to inject content script into ${url} after ${retries} attempts`);
         chrome.storage.local.get({ failedUrls: [] }, (data) => {
           const failedUrls = data.failedUrls || [];
           if (!failedUrls.includes(url)) {
             failedUrls.push(url);
             chrome.storage.local.set({ failedUrls }, () => {
-              logMessage('warn', `Added ${url} to failed URLs list for retry.`);
+              log('warn', `Added ${url} to failed URLs list for retry.`);
             });
           }
         });
@@ -133,7 +129,7 @@ debouncedMonitorGroupUrls();
 
 // Cleanup monitoring states on tab close
 chrome.tabs.onRemoved.addListener((tabId) => {
-  logMessage('info', `Tab ${tabId} closed. Cleaning up monitoring states.`);
+  log('info', `Tab ${tabId} closed. Cleaning up monitoring states.`);
   chrome.storage.local.get({ monitoringStates: {} }, (data) => {
     const monitoringStates = data.monitoringStates || {};
     let updated = false;
@@ -142,13 +138,13 @@ chrome.tabs.onRemoved.addListener((tabId) => {
       if (monitoringStates[url] === tabId) {
         delete monitoringStates[url];
         updated = true;
-        logMessage('info', `Removed monitoring state for URL: ${url}`);
+        log('info', `Removed monitoring state for URL: ${url}`);
       }
     }
 
     if (updated) {
       chrome.storage.local.set({ monitoringStates }, () => {
-        logMessage('info', 'Monitoring states updated after tab closure.');
+        log('info', 'Monitoring states updated after tab closure.');
       });
     }
   });
@@ -156,18 +152,18 @@ chrome.tabs.onRemoved.addListener((tabId) => {
 
 // Log when the service worker is installed or activated
 chrome.runtime.onInstalled.addListener(() => {
-  logMessage('info', 'Extension installed or updated');
+  log('info', 'Extension installed or updated');
 });
 
 chrome.runtime.onStartup.addListener(() => {
-  logMessage('info', 'Extension started');
+  log('info', 'Extension started');
 });
 
 // Handle uncaught exceptions in the background script
 window.addEventListener('error', (event) => {
-  logMessage('error', `Uncaught error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
+  log('error', `Uncaught error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
 });
 
 window.addEventListener('unhandledrejection', (event) => {
-  logMessage('error', `Unhandled promise rejection: ${event.reason}`);
+  log('error', `Unhandled promise rejection: ${event.reason}`);
 });

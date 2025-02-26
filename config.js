@@ -19,9 +19,15 @@ const config = {
   PUPPETEER_ARGS: ['--no-sandbox', '--disable-setuid-sandbox'],
 
   // Logging settings
-  LOG_LEVEL: process.env.LOG_LEVEL || 'info',
-  LOG_FILE_PATH: 'logs/app.log',
-  ERROR_LOG_FILE_PATH: 'logs/error.log',
+  LOG_LEVEL: process.env.LOG_LEVEL || 'info', // Default log level
+  LOG_FORMAT: process.env.LOG_FORMAT || 'json', // Log format: 'json' or 'plain'
+  LOG_FILE_PATH: 'logs/app.log', // Path for general logs
+  ERROR_LOG_FILE_PATH: 'logs/error.log', // Path for error logs
+  LOG_ROTATION: {
+    MAX_SIZE: '20m', // Maximum size of a log file before rotation
+    MAX_FILES: '14d', // Retain logs for 14 days
+    COMPRESS: true, // Compress rotated log files
+  },
 
   // Storage settings
   DATA_DIRECTORY: 'data',

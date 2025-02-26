@@ -4,11 +4,7 @@
  * Includes detailed logging and error handling.
  */
 
-// Utility function for logging messages with timestamps
-function logMessage(level, message) {
-  const timestamp = new Date().toISOString();
-  console[level](`[${timestamp}] ${message}`);
-}
+const { log } = require('./logging/clientLogger');
 
 // Save Facebook credentials to Chrome storage
 // TODO: Consider encrypting credentials before storing them for enhanced security.
@@ -19,12 +15,12 @@ function saveCredentials(username, password) {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError.message);
         } else {
-          logMessage('info', 'Credentials saved successfully');
+          log('info', 'Credentials saved successfully');
           resolve();
         }
       });
     } catch (error) {
-      logMessage('error', `Error saving credentials: ${error.message}`);
+      log('error', `Error saving credentials: ${error.message}`);
       reject(error.message);
     }
   });
@@ -42,17 +38,17 @@ function addGroupUrl(url) {
             if (chrome.runtime.lastError) {
               reject(chrome.runtime.lastError.message);
             } else {
-              logMessage('info', `Group URL added: ${url}`);
+              log('info', `Group URL added: ${url}`);
               resolve(groupUrls);
             }
           });
         } else {
-          logMessage('warn', `Group URL already exists: ${url}`);
+          log('warn', `Group URL already exists: ${url}`);
           resolve(groupUrls);
         }
       });
     } catch (error) {
-      logMessage('error', `Error adding group URL: ${error.message}`);
+      log('error', `Error adding group URL: ${error.message}`);
       reject(error.message);
     }
   });
@@ -66,7 +62,7 @@ function loadGroupUrls() {
         resolve(data.groupUrls || []);
       });
     } catch (error) {
-      logMessage('error', `Error loading group URLs: ${error.message}`);
+      log('error', `Error loading group URLs: ${error.message}`);
       reject(error.message);
     }
   });
@@ -76,7 +72,7 @@ function loadGroupUrls() {
 function clearLogs() {
   const logsContainer = document.getElementById('logs-container');
   logsContainer.innerHTML = '';
-  logMessage('info', 'Logs cleared');
+  log('info', 'Logs cleared');
 }
 
 // Populate the logs container with messages
@@ -221,11 +217,11 @@ function updateGroupUrlList(groupUrls) {
     });
   });
 
-  logMessage('info', 'Group URL list updated');
+  log('info', 'Group URL list updated');
 }
 
 // Initialize the popup when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
-  logMessage('info', 'Popup script loaded and DOM fully loaded');
+  log('info', 'Popup script loaded and DOM fully loaded');
   initializePopup();
 });

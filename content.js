@@ -4,11 +4,7 @@
  * Includes detailed logging and error handling.
  */
 
-// Utility function for logging messages with timestamps
-function logMessage(level, message) {
-  const timestamp = new Date().toISOString();
-  console[level](`[${timestamp}] ${message}`);
-}
+const { log } = require('./logging/clientLogger');
 
 // Function to send messages to the background script
 function sendMessageToBackground(type, payload) {
@@ -38,33 +34,33 @@ function extractPosts() {
 
 function interactWithFacebookPage() {
   try {
-    logMessage('info', 'Interacting with the Facebook page...');
+    log('info', 'Interacting with the Facebook page...');
 
     // Extract the title of the page
     const pageTitle = document.title;
-    logMessage('info', `Page title: ${pageTitle}`);
+    log('info', `Page title: ${pageTitle}`);
 
     // Extract posts from the page
     const extractedData = extractPosts();
 
-    logMessage('info', `Extracted ${extractedData.length} posts from the page`);
+    log('info', `Extracted ${extractedData.length} posts from the page`);
 
     // Send the extracted data to the background script
     (async () => {
       try {
         const response = await sendMessageToBackground('monitor', { pageTitle, posts: extractedData });
-        logMessage('info', `Background script response: ${JSON.stringify(response)}`);
+        log('info', `Background script response: ${JSON.stringify(response)}`);
       } catch (error) {
-        logMessage('error', `Error sending extracted data to background script: ${error}`);
+        log('error', `Error sending extracted data to background script: ${error}`);
       }
     })();
   } catch (error) {
     if (error instanceof TypeError) {
-      logMessage('error', `TypeError encountered: ${error.message}`);
+      log('error', `TypeError encountered: ${error.message}`);
     } else if (error instanceof ReferenceError) {
-      logMessage('error', `ReferenceError encountered: ${error.message}`);
+      log('error', `ReferenceError encountered: ${error.message}`);
     } else {
-      logMessage('error', `Unexpected error: ${error.message}`);
+      log('error', `Unexpected error: ${error.message}`);
     }
   }
 
@@ -72,12 +68,12 @@ function interactWithFacebookPage() {
   const observer = new MutationObserver(() => {
     try {
       const updatedData = extractPosts();
-      logMessage('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
+      log('info', `Detected DOM changes. Extracted ${updatedData.length} posts.`);
       sendMessageToBackground('monitor', { pageTitle, posts: updatedData }).catch((error) => {
-        logMessage('error', `Error sending updated data to background script: ${error}`);
+        log('error', `Error sending updated data to background script: ${error}`);
       });
     } catch (error) {
-      logMessage('error', `Error during DOM observation: ${error.message}`);
+      log('error', `Error during DOM observation: ${error.message}`);
     }
   });
 
@@ -87,22 +83,22 @@ function interactWithFacebookPage() {
 
 // Handle uncaught exceptions
 window.addEventListener('error', (event) => {
-  logMessage('error', `Uncaught error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
+  log('error', `Uncaught error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
   sendMessageToBackground('error', `Uncaught error: ${event.message}`).catch((error) => {
-    logMessage('error', `Failed to log uncaught error to background script: ${error}`);
+    log('error', `Failed to log uncaught error to background script: ${error}`);
   });
 });
 
 // Handle unhandled promise rejections
 window.addEventListener('unhandledrejection', (event) => {
-  logMessage('error', `Unhandled promise rejection: ${event.reason}`);
+  log('error', `Unhandled promise rejection: ${event.reason}`);
   sendMessageToBackground('error', `Unhandled promise rejection: ${event.reason}`).catch((error) => {
-    logMessage('error', `Failed to log unhandled rejection to background script: ${error}`);
+    log('error', `Failed to log unhandled rejection to background script: ${error}`);
   });
 });
 
 // Execute the main function when the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
-  logMessage('info', 'Content script loaded and DOM fully loaded');
+  log('info', 'Content script loaded and DOM fully loaded');
   interactWithFacebookPage();
 });
