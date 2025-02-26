@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "postinstall": "node -e \"const fs = require('fs'); const dirs = ['data', 'logs']; dirs.forEach(dir => { if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); } });\""
+    "postinstall": "node -e \"const fs = require('fs'); const dirs = ['data', 'logs']; dirs.forEach(dir => { if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); } });\"",
+    "dev": "nodemon app.js"
   },
   "keywords": [
     "facebook",
@@ -24,7 +25,9 @@
     "winston": "^3.8.2",
     "winston-daily-rotate-file": "^4.7.1"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "nodemon": "^3.0.0"
+  },
   "engines": {
     "node": ">=14.0.0"
   }

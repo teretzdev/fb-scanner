@@ -5,123 +5,44 @@
  */
 
 const { log } = require('./logging/clientLogger');
+const { getGroupUrls } = require('./storage');
 
-// Listener for messages from content scripts or popup
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
-  try {
-    log('info', `Received message: ${JSON.stringify(message)} from ${sender.url || 'unknown sender'}`);
-
-    if (message.type === 'log') {
-      // Log messages sent from content scripts or popup
-      log('info', `Log from extension: ${message.payload}`);
-      sendResponse({ status: 'success', message: 'Log received' });
-    } else if (message.type === 'error') {
-      // Handle error messages
-      log('error', `Error reported: ${message.payload}`);
-      sendResponse({ status: 'success', message: 'Error logged' });
-    } else if (message.type === 'monitor') {
-      // Handle monitor messages
-      log('info', `Monitor message received with payload: ${JSON.stringify(message.payload)}`);
-      sendResponse({ status: 'success', message: 'Monitor message processed' });
-    } else {
-      // Handle unknown message types
-      log('warn', `Unknown message type: ${message.type}`);
-      sendResponse({ status: 'error', message: 'Unknown message type' });
-    }
-  } catch (error) {
-    try {
-      log('error', `Exception in message handler: ${error.message}`);
-    } catch (logError) {
-      console.error('Failed to log error:', logError);
-    }
-    sendResponse({ status: 'error', message: 'Internal error occurred' });
-  }
-
-  // Indicate that the response will be sent asynchronously
-  return true;
-});
-
-const MONITOR_INTERVAL = 60000; // 1 minute
-let monitorTimeout;
-
-// Debounced function to monitor Facebook group URLs
+// Monitor Facebook group URLs periodically
 async function monitorGroupUrls() {
   try {
-    const { groupUrls = [] } = await chrome.storage.local.get({ groupUrls: [] });
+    const groupUrls = await getGroupUrls();
     if (groupUrls.length === 0) {
       log('warn', 'No group URLs found for monitoring');
       return;
     }
 
-    let tabs = [];
-    try {
-      tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    } catch (error) {
-      log('error', `Failed to query active tabs: ${error.message}`);
-      return;
-    }
-
-    const activeTabUrls = tabs.map((tab) => tab.url);
-
-    if (activeTabUrls.length === 0) {
-      log('warn', 'No active tabs found in the current window');
-    }
-
     for (const url of groupUrls) {
-      const { monitoringStates = {} } = await chrome.storage.local.get({ monitoringStates: {} });
-      try {
-        const isMonitoringEnabled = monitoringStates[url] === true;
-
-        if (isMonitoringEnabled) {
-          const matchingTab = tabs.find((tab) => tab.url === url);
-          if (matchingTab) {
-            await injectContentScriptWithRetry(matchingTab.id, url);
-          } else {
-            log('warn', `No active tab matches the monitored URL: ${url}`);
-          }
-        } else {
-          log('info', `Monitoring is disabled for URL: ${url}`);
-        }
-      } catch (error) {
-        log('error', `Error processing URL ${url}: ${error.message}`);
-      }
+      log('info', `Monitoring URL: ${url}`);
+      // Placeholder for processing the URL (e.g., scraping or checking status)
+      await processUrl(url);
     }
   } catch (error) {
     log('error', `Error in monitorGroupUrls: ${error.message}`);
   }
 }
 
-/**
- * Retry mechanism for injecting content scripts into a tab.
- * This function attempts to inject the content script multiple times
- * in case of failures, and logs errors for each failed attempt.
- */
-async function injectContentScriptWithRetry(tabId, url, retries = 3) {
-  for (let attempt = 1; attempt <= retries; attempt++) {
-    try {
-      await chrome.scripting.executeScript({
-        target: { tabId, allFrames: true },
-        files: ['content.js'],
-      });
-      log('info', `Content script injected into ${url}`);
-      return;
-    } catch (error) {
-      log('error', `Attempt ${attempt} failed to inject content script into ${url}: ${error.message}`);
-      if (attempt === retries) {
-        log('error', `Failed to inject content script into ${url} after ${retries} attempts`);
-        chrome.storage.local.get({ failedUrls: [] }, (data) => {
-          const failedUrls = data.failedUrls || [];
-          if (!failedUrls.includes(url)) {
-            failedUrls.push(url);
-            chrome.storage.local.set({ failedUrls }, () => {
-              log('warn', `Added ${url} to failed URLs list for retry.`);
-            });
-          }
-        });
-      }
-    }
+// Placeholder function for processing a URL
+async function processUrl(url) {
+  try {
+    log('info', `Processing URL: ${url}`);
+    // Simulate some asynchronous operation
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    log('info', `Finished processing URL: ${url}`);
+  } catch (error) {
+    log('error', `Error processing URL ${url}: ${error.message}`);
   }
 }
+
+// Start periodic monitoring
+const MONITOR_INTERVAL = 60000; // 1 minute
+setInterval(monitorGroupUrls, MONITOR_INTERVAL);
+
+
 
 /**
  * Debounce wrapper to delay the execution of a function.

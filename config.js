@@ -27,7 +27,7 @@ const config = {
     MAX_SIZE: '20m', // Maximum size of a log file before rotation
     MAX_FILES: '14d', // Retain logs for 14 days
     COMPRESS: true // Compress rotated log files
-  }
+  },
 
   // Storage settings
   DATA_DIRECTORY: 'data',
