@@ -30,24 +30,11 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files from the "public" directory
-app.use(express.static('public'));
-app.use(express.static('frontend/build'));
 
-app.get('*', (req, res) => {
-  res.sendFile(__dirname + '/frontend/build/index.html');
-});
-
-const healthRoutes = require('./routes/health');
-const credentialsRoutes = require('./routes/credentials');
-const groupUrlsRoutes = require('./routes/groupUrls');
 const scanRoutes = require('./routes/scan');
 const logsRoutes = require('./routes/logs');
 
 // Routes
-app.use('/health', healthRoutes);
-app.use('/api/credentials', credentialsRoutes);
-app.use('/api/group-urls', groupUrlsRoutes);
 app.use('/api/scan', scanRoutes);
 app.use('/api/logs', logsRoutes);
 
@@ -59,7 +46,7 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
 app.listen(PORT, () => {
   serverLogger.info(`Server is running on http://localhost:${PORT}`);
+  serverLogger.info('API routes mounted: /api/logs, /api/scan');
 });

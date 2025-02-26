@@ -5,7 +5,7 @@
 
 const express = require('express');
 const router = express.Router();
-const { scanUrl } = require('../scanner');
+const puppeteer = require('puppeteer');
 const storage = require('../storage');
 const serverLogger = require('../logging/serverLogger');
 const { isValidUrl } = require('../utils');
@@ -27,11 +27,44 @@ router.post('/', async (req, res) => {
     serverLogger.info(`Initiating scan for URL: ${url}`);
 
     // Perform the scan
-    const scanResults = await scanUrl(url);
+    // Launch Puppeteer and navigate to the URL
+    const browser = await puppeteer.launch();
+    const page = await browser.newPage();
 
-    // Save the scan results
-    await storage.saveLog(`Scan completed for URL: ${url}`);
-    serverLogger.info(`Scan results saved for URL: ${url}`);
+    try {
+      await page.goto(url, { waitUntil: 'networkidle2' });
+
+      // Extract dummy profile information
+      const name = await page.evaluate(() => document.querySelector('h1')?.innerText || 'Unknown Name');
+      const bio = await page.evaluate(() => document.querySelector('.bio')?.innerText || 'No bio available');
+      const posts = await page.evaluate(() => {
+        const postElements = document.querySelectorAll('.post');
+        return Array.from(postElements).map((post) => ({
+          content: post.innerText || 'No content',
+          timestamp: post.querySelector('.timestamp')?.innerText || 'Unknown time',
+        }));
+      });
+
+      const scanResults = { name, bio, posts };
+
+      // Save the scan results
+      await storage.saveLog(`Scan completed for URL: ${url}`);
+      serverLogger.info(`Scan results saved for URL: ${url}`);
+
+      res.status(200).json({
+        success: true,
+        message: 'Scan completed successfully',
+        data: scanResults,
+      });
+    } catch (error) {
+      serverLogger.error(`Error during Puppeteer operation for URL ${url}: ${error.message}`);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to complete the scan. Please try again later.',
+      });
+    } finally {
+      await browser.close();
+    }
 
     res.status(200).json({
       success: true,
