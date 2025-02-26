@@ -17,10 +17,17 @@ function getTimestamp() {
   return new Date().toISOString();
 }
 
-// Utility function to log messages in the Chrome extension environment
+/**
+ * Logs messages in the Chrome extension environment with custom formatting.
+ * Supports log levels: error, warn, info, and debug.
+ * @param {string} level - The log level (error, warn, info, debug).
+ * @param {string} message - The message to log.
+ * @param {Object} [meta={}] - Additional metadata to include in the log.
+ */
 function log(level, message, meta = {}) {
   if (!logLevels[level]) {
-    throw new Error(`Invalid log level: ${level}`);
+    console.error(`Invalid log level: ${level}`);
+    return;
   }
 
   const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
@@ -30,10 +37,8 @@ function log(level, message, meta = {}) {
   );
 }
 
-// Export the utility function
-module.exports = {
-  log,
-};
+// Export the log function
+export { log };
 ```
 
 ---
