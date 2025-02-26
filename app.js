@@ -8,6 +8,9 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const serverLogger = require('./logging/serverLogger');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { v4: uuidv4 } = require('uuid');
 
 // Initialize Express app
 const app = express();
@@ -17,14 +20,41 @@ const PORT = process.env.PORT || 3000;
  * Middleware
  */
 
-// Log incoming HTTP requests
+/**
+ * Middleware
+ */
+
+// Add unique request ID to each request
+app.use((req, res, next) => {
+  req.id = uuidv4();
+  next();
+});
+
+// Log incoming HTTP requests with additional metadata
 app.use((req, res, next) => {
   serverLogger.info(`Incoming request: ${req.method} ${req.url}`, {
+    requestId: req.id,
+    userAgent: req.headers['user-agent'],
+    ip: req.ip,
     headers: req.headers,
     body: req.body,
   });
   next();
 });
+
+// Set security headers
+app.use(helmet());
+
+// Apply rate limiting to all requests
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  message: {
+    success: false,
+    message: 'Too many requests, please try again later.',
+  },
+});
+app.use(limiter);
 
 app.use(cors());
 app.use(bodyParser.json());

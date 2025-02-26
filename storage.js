@@ -6,6 +6,7 @@
 
 const fs = require('fs').promises;
 const path = require('path');
+const crypto = require('crypto');
 const serverLogger = require('./logging/serverLogger');
 
 // Define file paths for storing data
@@ -69,10 +70,31 @@ async function removeGroupUrl(url) {
 }
 
 // Save Facebook credentials
+const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || 'default_key_32_bytes_long!'; // Must be 32 bytes
+const IV_LENGTH = 16; // AES block size
+
+function encrypt(text) {
+  const iv = crypto.randomBytes(IV_LENGTH);
+  const cipher = crypto.createCipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), iv);
+  let encrypted = cipher.update(text);
+  encrypted = Buffer.concat([encrypted, cipher.final()]);
+  return iv.toString('hex') + ':' + encrypted.toString('hex');
+}
+
+function decrypt(text) {
+  const [iv, encryptedText] = text.split(':');
+  const decipher = crypto.createDecipheriv('aes-256-cbc', Buffer.from(ENCRYPTION_KEY), Buffer.from(iv, 'hex'));
+  let decrypted = decipher.update(Buffer.from(encryptedText, 'hex'));
+  decrypted = Buffer.concat([decrypted, decipher.final()]);
+  return decrypted.toString();
+}
+
 async function saveCredentials(username, password) {
   try {
     await ensureDataDirectory();
-    const credentials = { username, password };
+    const encryptedUsername = encrypt(username);
+    const encryptedPassword = encrypt(password);
+    const credentials = { username: encryptedUsername, password: encryptedPassword };
     await fs.writeFile(CREDENTIALS_FILE, JSON.stringify(credentials, null, 2));
     serverLogger.info('Facebook credentials saved successfully', { file: CREDENTIALS_FILE });
   } catch (error) {
@@ -86,8 +108,10 @@ async function getCredentials() {
   try {
     const data = await fs.readFile(CREDENTIALS_FILE, 'utf-8');
     const credentials = JSON.parse(data);
+    const decryptedUsername = decrypt(credentials.username);
+    const decryptedPassword = decrypt(credentials.password);
     serverLogger.info('Facebook credentials retrieved successfully', { file: CREDENTIALS_FILE });
-    return credentials;
+    return { username: decryptedUsername, password: decryptedPassword };
   } catch (error) {
     if (error.code === 'ENOENT') {
       serverLogger.warn('Credentials file not found', { file: CREDENTIALS_FILE });

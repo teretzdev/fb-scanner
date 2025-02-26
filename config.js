@@ -36,8 +36,8 @@ const config = {
   LOGS_FILE: 'data/logs.json',
 
   // Facebook-specific settings
-  FACEBOOK_BASE_URL: 'https://www.facebook.com',
-  FACEBOOK_LOGIN_URL: 'https://www.facebook.com/login',
+  FACEBOOK_BASE_URL: process.env.FACEBOOK_BASE_URL || 'https://www.facebook.com',
+  FACEBOOK_LOGIN_URL: process.env.FACEBOOK_LOGIN_URL || 'https://www.facebook.com/login',
   FACEBOOK_GROUP_SELECTOR: '[role="feed"]',
   FACEBOOK_POST_SELECTOR: '[role="article"]',
 }
