@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
     const { url } = req.body;
 
     // Validate input
-    if (!url || !isValidUrl(url)) {
+    if (!url || typeof url !== 'string' || !isValidUrl(url)) {
       logger.warn('Invalid or missing URL in request body');
       return res.status(400).json({
         success: false,

@@ -67,6 +67,28 @@ router.get('/', async (req, res) => {
   }
 });
 
+/**
+ * DELETE /api/credentials - Delete Facebook credentials
+ */
+router.delete('/', async (req, res) => {
+  try {
+    // Delete credentials using storage module
+    await storage.deleteCredentials();
+    logger.info('Facebook credentials deleted successfully');
+
+    res.status(200).json({
+      success: true,
+      message: 'Credentials deleted successfully',
+    });
+  } catch (error) {
+    logger.error(`Error deleting credentials: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to delete credentials',
+    });
+  }
+});
+
 module.exports = router;
 ```
 
