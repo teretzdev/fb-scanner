@@ -1,1 +1,73 @@
-actually we want to 
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FB Scanner Preview</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="preview-container">
+    <!-- Header Section -->
+    <header>
+      <h1>FB Scanner - Preview</h1>
+    </header>
+
+    <!-- Facebook Credentials Section -->
+    <section id="credentials-preview">
+      <h2>Facebook Credentials</h2>
+      <p>Manage your Facebook credentials securely.</p>
+      <form>
+        <label for="username">Username:</label>
+        <input type="text" id="username" placeholder="Enter your username" disabled>
+        
+        <label for="password">Password:</label>
+        <input type="password" id="password" placeholder="Enter your password" disabled>
+        
+        <button type="button" disabled>Save Credentials</button>
+      </form>
+    </section>
+
+    <!-- Group URL Management Section -->
+    <section id="group-urls-preview">
+      <h2>Manage Group URLs</h2>
+      <p>Add and manage Facebook group URLs for monitoring.</p>
+      <form>
+        <label for="group-url">Group URL:</label>
+        <input type="url" id="group-url" placeholder="Enter group URL" disabled>
+        <button type="button" disabled>Add URL</button>
+      </form>
+      <ul>
+        <li>Example Group URL 1</li>
+        <li>Example Group URL 2</li>
+      </ul>
+    </section>
+
+    <!-- Monitoring Controls Section -->
+    <section id="monitoring-controls-preview">
+      <h2>Monitoring Controls</h2>
+      <p>Control monitoring for your added group URLs.</p>
+      <ul>
+        <li>
+          Example Group URL 1
+          <button type="button" disabled>Start Monitoring</button>
+        </li>
+        <li>
+          Example Group URL 2
+          <button type="button" disabled>Stop Monitoring</button>
+        </li>
+      </ul>
+    </section>
+
+    <!-- Logs Section -->
+    <section id="logs-preview">
+      <h2>Logs</h2>
+      <p>View logs of application activity.</p>
+      <div id="logs-container">
+        <div>[2023-10-01T12:00:00Z] Example log entry 1</div>
+        <div>[2023-10-01T12:05:00Z] Example log entry 2</div>
+      </div>
+    </section>
+  </div>
+</body>
+</html>
