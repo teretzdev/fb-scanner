@@ -16,11 +16,11 @@ router.post('/', async (req, res) => {
     const { url } = req.body;
 
     // Validate input
-    if (!url || !isValidUrl(url)) {
-      logger.warn('Invalid or missing URL in request body');
+    if (!url || typeof url !== 'string' || !isValidUrl(url)) {
+      logger.warn(`Invalid or missing URL in request body: ${url}`);
       return res.status(400).json({
         success: false,
-        message: 'A valid URL is required',
+        message: 'A valid URL (string) is required',
       });
     }
 
@@ -39,10 +39,10 @@ router.post('/', async (req, res) => {
       data: scanResults,
     });
   } catch (error) {
-    logger.error(`Error during scan: ${error.message}`);
+    logger.error(`Error during scan for URL ${req.body.url || 'unknown'}: ${error.message}`);
     res.status(500).json({
       success: false,
-      message: 'Failed to complete the scan',
+      message: 'Failed to complete the scan. Please try again later.',
     });
   }
 });
@@ -53,9 +53,10 @@ router.get('/', async (req, res) => {
     // Retrieve scan logs
     const logs = await storage.getLogs();
 
-    logger.info('Scan results retrieved successfully');
+    logger.info(`Scan results retrieved successfully. Total logs: ${logs.length}`);
     res.status(200).json({
       success: true,
+      message: 'Scan results retrieved successfully.',
       logs,
     });
   } catch (error) {
