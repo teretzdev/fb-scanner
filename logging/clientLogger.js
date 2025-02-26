@@ -49,8 +49,9 @@ function log(level, message, meta = {}) {
   );
 }
 
-// Export the log function
-export { log };
+module.exports = {
+  log,
+};
 ```
 
 ---
