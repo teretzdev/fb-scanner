@@ -20,6 +20,24 @@
    ```
 5. Open your browser and navigate to `http://localhost:3000` to access the web interface.
 
+## React Frontend Setup
+
+To set up and run the React frontend:
+
+1. Navigate to the `frontend` directory:
+   ```bash
+   cd frontend
+   ```
+2. Install the required dependencies:
+   ```bash
+   npm install
+   ```
+3. Start the React development server:
+   ```bash
+   npm start
+   ```
+4. Open your browser and navigate to `http://localhost:3000` to view the React application.
+
 ## Usage
 
 1. **Facebook Credentials**:
