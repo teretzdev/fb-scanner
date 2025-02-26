@@ -4,7 +4,7 @@
  * Includes detailed logging and error handling.
  */
 
-import { log } from './logging/clientLogger';
+const { log } = require('./logging/clientLogger');
 
 // Function to send messages to the background script
 function sendMessageToBackground(type, payload) {

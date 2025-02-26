@@ -4,7 +4,7 @@
  * Includes enhanced error handling and detailed logs.
  */
 
-import { log } from './logging/clientLogger.js';
+const { log } = require('./logging/clientLogger');
 
 // Listener for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
