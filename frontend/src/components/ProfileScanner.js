@@ -14,6 +14,16 @@ const ProfileScanner = () => {
   const [loading, setLoading] = useState(false);
 
   /**
+   * Validates the format of a Facebook profile URL.
+   * @param {string} url - The URL to validate.
+   * @returns {boolean} - True if the URL is valid, false otherwise.
+   */
+  const isValidFacebookUrl = (url) => {
+    const facebookUrlPattern = /^(https?:\/\/)?(www\.)?facebook\.com\/[a-zA-Z0-9(.?)?]/;
+    return facebookUrlPattern.test(url);
+  };
+
+  /**
    * Handles the form submission to initiate a profile scan.
    * Sends the URL to the backend API and updates the state with the results.
    */
@@ -23,8 +33,8 @@ const ProfileScanner = () => {
     setScanResults(null);
     setLoading(true);
 
-    if (!url) {
-      setError('Please enter a valid Facebook profile URL.');
+    if (!isValidFacebookUrl(url)) {
+      setError('Invalid URL. Please enter a valid Facebook profile URL.');
       setLoading(false);
       return;
     }
