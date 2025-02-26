@@ -1,6 +1,6 @@
 /**
  * background.js
- * Handles messaging and logging for the Chrome extension.
+ * Handles monitoring and logging for the FB Scanner application.
  * Includes enhanced error handling and detailed logs.
  */
 
@@ -56,6 +56,23 @@ async function monitorGroupUrls() {
     log('error', `Error in monitorGroupUrls: ${error.message}`);
   }
 }
+
+/**
+ * Initializes periodic monitoring of Facebook group URLs.
+ */
+function initializeMonitoring() {
+  setInterval(monitorGroupUrls, MONITOR_INTERVAL);
+  log('info', 'Monitoring initialized with interval: ' + MONITOR_INTERVAL + 'ms');
+}
+
+// Global error handlers
+process.on('uncaughtException', (error) => {
+  log('error', `Uncaught exception: ${error.message}`);
+});
+
+process.on('unhandledRejection', (reason) => {
+  log('error', `Unhandled promise rejection: ${reason}`);
+});
 
 /**
  * Retry mechanism for injecting content scripts into a tab.
@@ -144,14 +161,7 @@ chrome.runtime.onStartup.addListener(() => {
   log('info', 'Extension started');
 });
 
-/**
- * Global error handlers for uncaught exceptions and unhandled promise rejections.
- * Ensures that all unexpected errors are logged for debugging purposes.
- */
-process.on('uncaughtException', (error) => {
-  log('error', `Uncaught exception: ${error.message}`);
-});
-
-process.on('unhandledRejection', (reason) => {
-  log('error', `Unhandled promise rejection: ${reason}`);
-});
+module.exports = {
+  monitorGroupUrls,
+  initializeMonitoring,
+};

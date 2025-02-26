@@ -4,7 +4,9 @@
  * Provides consistent logging functionality across popup.js, content.js, and background.js.
  */
 
-// Define log levels and their corresponding console methods
+/**
+ * Define log levels and their corresponding console methods
+ */
 const logLevels = {
   error: console.error,
   warn: console.warn,
@@ -18,7 +20,7 @@ function getTimestamp() {
 }
 
 /**
- * Logs messages in the Chrome extension environment with custom formatting.
+ * Logs messages in a Node.js environment with custom formatting.
  * Supports log levels: error, warn, info, and debug.
  * @param {string} level - The log level (error, warn, info, debug).
  * @param {string} message - The message to log.

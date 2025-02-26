@@ -6,6 +6,7 @@
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
+    "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1",
     "postinstall": "node -e \"const fs = require('fs'); const dirs = ['data', 'logs']; dirs.forEach(dir => { if (!fs.existsSync(dir)) { fs.mkdirSync(dir, { recursive: true }); } });\""
   },
@@ -24,6 +25,9 @@
     "puppeteer": "^21.3.8",
     "winston": "^3.8.2",
     "winston-daily-rotate-file": "^4.7.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.0"

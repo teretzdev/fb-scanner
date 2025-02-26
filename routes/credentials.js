@@ -39,33 +39,8 @@ router.post('/', async (req, res) => {
   }
 });
 
+<<<< UPDATED
 // GET /api/credentials - Retrieve Facebook credentials
-router.get('/', async (req, res) => {
-  try {
-    // Retrieve credentials using storage module
-    const credentials = await storage.getCredentials();
-
-    if (!credentials) {
-      serverLogger.warn('No credentials found');
-      return res.status(404).json({
-        success: false,
-        message: 'No credentials found',
-      });
-    }
-
-    serverLogger.info('Facebook credentials retrieved successfully');
-    res.status(200).json({
-      success: true,
-      data: credentials,
-    });
-  } catch (error) {
-    serverLogger.error(`Error retrieving credentials: ${error.message}`);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to retrieve credentials',
-    });
-  }
-});
 
 /**
  * DELETE /api/credentials - Delete Facebook credentials
