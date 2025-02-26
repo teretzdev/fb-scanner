@@ -15,7 +15,7 @@ router.post('/', async (req, res) => {
 
     // Validate input
     if (!username || !password) {
-      logger.warn('Missing username or password in request body');
+      logger.warn(`Missing username or password in request body. Request details: IP=${req.ip}, User-Agent=${req.get('User-Agent')}`);
       return res.status(400).json({
         success: false,
         message: 'Username and password are required',
@@ -24,14 +24,15 @@ router.post('/', async (req, res) => {
 
     // Save credentials using storage module
     await storage.saveCredentials(username, password);
-    logger.info('Facebook credentials saved successfully');
+    logger.info(`Facebook credentials saved successfully for username: ${username}`);
+    logger.debug(`Request body: ${JSON.stringify({ username })}`);
 
     res.status(200).json({
       success: true,
       message: 'Credentials saved successfully',
     });
   } catch (error) {
-    logger.error(`Error saving credentials: ${error.message}`);
+    logger.error(`Error saving credentials: ${error.message}`, { stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to save credentials',
@@ -46,7 +47,7 @@ router.get('/', async (req, res) => {
     const credentials = await storage.getCredentials();
 
     if (!credentials) {
-      logger.warn('No credentials found');
+      logger.warn(`No credentials found. Request details: IP=${req.ip}, User-Agent=${req.get('User-Agent')}`);
       return res.status(404).json({
         success: false,
         message: 'No credentials found',
@@ -54,12 +55,13 @@ router.get('/', async (req, res) => {
     }
 
     logger.info('Facebook credentials retrieved successfully');
+    logger.debug(`Retrieved credentials: ${JSON.stringify({ username: credentials.username })}`);
     res.status(200).json({
       success: true,
       data: credentials,
     });
   } catch (error) {
-    logger.error(`Error retrieving credentials: ${error.message}`);
+    logger.error(`Error retrieving credentials: ${error.message}`, { stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve credentials',
@@ -75,13 +77,14 @@ router.delete('/', async (req, res) => {
     // Delete credentials using storage module
     await storage.deleteCredentials();
     logger.info('Facebook credentials deleted successfully');
+    logger.debug(`Request details: IP=${req.ip}, User-Agent=${req.get('User-Agent')}`);
 
     res.status(200).json({
       success: true,
       message: 'Credentials deleted successfully',
     });
   } catch (error) {
-    logger.error(`Error deleting credentials: ${error.message}`);
+    logger.error(`Error deleting credentials: ${error.message}`, { stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to delete credentials',
@@ -139,7 +142,7 @@ router.post('/', async (req, res) => {
       message: 'Credentials saved successfully',
     });
   } catch (error) {
-    logger.error(`Error saving credentials: ${error.message}`);
+    logger.error(`Error saving credentials: ${error.message}`, { stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to save credentials',
@@ -167,7 +170,7 @@ router.get('/', async (req, res) => {
       data: credentials,
     });
   } catch (error) {
-    logger.error(`Error retrieving credentials: ${error.message}`);
+    logger.error(`Error retrieving credentials: ${error.message}`, { stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve credentials',

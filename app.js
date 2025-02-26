@@ -12,7 +12,18 @@ const logger = require('./logger');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+/**
+ * Middleware
+ * Logs incoming requests and outgoing responses.
+ */
+app.use((req, res, next) => {
+  logger.info(`Incoming request: ${req.method} ${req.url}`);
+  res.on('finish', () => {
+    logger.info(`Response sent: ${res.statusCode} ${req.method} ${req.url}`);
+  });
+  next();
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -40,7 +51,10 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Start the server
+/**
+ * Start the server
+ * Logs server startup details, including the environment.
+ */
 app.listen(PORT, () => {
-  logger.info(`Server is running on http://localhost:${PORT}`);
+  logger.info(`Server is running on http://localhost:${PORT} in ${process.env.NODE_ENV || 'development'} mode`);
 });

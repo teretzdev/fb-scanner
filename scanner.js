@@ -40,6 +40,7 @@ async function scanUrl(url) {
     await page.goto(url, { waitUntil: 'networkidle2' });
 
     logger.info(`Navigated to URL: ${url}`);
+    logger.debug('Waiting for login form to load...');
 
     // Log in to Facebook using stored credentials
     const credentials = await storage.getCredentials();
@@ -47,19 +48,24 @@ async function scanUrl(url) {
       throw new Error('Facebook credentials are missing');
     }
 
+    logger.debug('Filling in login credentials...');
     await page.type('#email', credentials.username, { delay: 100 });
     await page.type('#pass', credentials.password, { delay: 100 });
+    logger.debug('Clicking the login button...');
     await page.click('[name="login"]');
 
     // Wait for navigation after login
+    logger.debug('Waiting for navigation after login...');
     await page.waitForNavigation({ waitUntil: 'networkidle2' });
 
     logger.info('Logged in to Facebook successfully');
 
     // Wait for the group page to load
+    logger.debug(`Waiting for group page to load using selector: ${config.FACEBOOK_GROUP_SELECTOR}`);
     await page.waitForSelector(config.FACEBOOK_GROUP_SELECTOR, { timeout: config.DEFAULT_TIMEOUT });
 
     // Extract posts and comments from the group
+    logger.debug('Extracting posts and comments from the group page...');
     const posts = await page.evaluate(() => {
       const postElements = document.querySelectorAll('[role="article"], div[data-pagelet^="FeedUnit_"]');
       return Array.from(postElements).map((post) => {
@@ -80,17 +86,20 @@ async function scanUrl(url) {
       });
     });
 
-    logger.info(`Extracted ${posts.length} posts and their comments from the group`);
+    logger.info(`Extracted ${posts.length} posts from the group`);
+    posts.forEach((post, index) => {
+      logger.debug(`Post ${index + 1}: ${post.content.substring(0, 50)}... (${post.comments.length} comments)`);
+    });
 
     // Return the extracted posts and comments
     return { posts };
   } catch (error) {
-    logger.error(`Error during scanning: ${error.message}`);
+    logger.error(`Error during scanning: ${error.message}`, { stack: error.stack });
     throw new Error(`Failed to scan URL: ${error.message}. URL: ${url}`);
   } finally {
     if (browser) {
       await browser.close();
-      logger.info('Browser closed');
+      logger.info('Browser closed successfully');
     }
   }
 }

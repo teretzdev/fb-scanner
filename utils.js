@@ -87,4 +87,18 @@ module.exports = {
   handleError,
   debounce,
   throttle,
+  logWithLevel,
 };
+
+/**
+ * Logs a message with the specified log level.
+ * @param {string} level - The log level (e.g., 'info', 'warn', 'error').
+ * @param {string} message - The message to log.
+ */
+function logWithLevel(level, message) {
+  if (logger[level]) {
+    logger[level](message);
+  } else {
+    logger.warn(`Invalid log level: ${level}. Message: ${message}`);
+  }
+}

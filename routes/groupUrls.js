@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
 
     // Add the group URL using the storage module
     const groupUrls = await storage.addGroupUrl(url);
-    logger.info(`Group URL added successfully: ${url}`);
+    logger.info(`Group URL added successfully: ${url}. Updated list of group URLs: ${JSON.stringify(groupUrls)}`);
 
     res.status(200).json({
       success: true,
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
       groupUrls,
     });
   } catch (error) {
-    logger.error(`Error adding group URL: ${error.message}`);
+    logger.error(`Error adding group URL: ${error.message}`, { stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to add group URL',
@@ -47,13 +47,13 @@ router.get('/', async (req, res) => {
     // Retrieve group URLs using the storage module
     const groupUrls = await storage.getGroupUrls();
 
-    logger.info('Group URLs retrieved successfully');
+    logger.info(`Group URLs retrieved successfully. Total URLs: ${groupUrls.length}`);
     res.status(200).json({
       success: true,
       groupUrls,
     });
   } catch (error) {
-    logger.error(`Error retrieving group URLs: ${error.message}`);
+    logger.error(`Error retrieving group URLs: ${error.message}`, { stack: error.stack });
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve group URLs',
@@ -93,14 +93,14 @@ router.delete('/', async (req, res) => {
       const updatedGroupUrls = groupUrls.filter((groupUrl) => groupUrl !== url);
       await storage.saveGroupUrls(updatedGroupUrls);
 
-      logger.info(`Group URL removed successfully: ${url}`);
+      logger.info(`Group URL removed successfully: ${url}. Updated list of group URLs: ${JSON.stringify(updatedGroupUrls)}`);
       return res.status(200).json({
         success: true,
         message: 'Group URL removed successfully',
         groupUrls: updatedGroupUrls,
       });
     } catch (error) {
-      logger.error(`Error removing group URL: ${error.message}`);
+      logger.error(`Error removing group URL: ${error.message}`, { stack: error.stack });
       return res.status(500).json({
         success: false,
         message: 'An error occurred while removing the group URL',
