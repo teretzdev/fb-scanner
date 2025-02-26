@@ -8,7 +8,7 @@ const router = express.Router();
 const { scanProfile } = require('../services/facebookService');
 const storage = require('../storage');
 const serverLogger = require('../logging/serverLogger');
-const { isValidUrl } = require('../utils/utils');
+const validator = require('validator');
 
 // POST /api/scan - Initiate a scan for a Facebook profile URL
 router.post('/', async (req, res) => {
@@ -16,10 +16,11 @@ router.post('/', async (req, res) => {
     const { url } = req.body;
 
     // Validate input
-    if (!url || typeof url !== 'string' || !isValidUrl(url)) {
+    if (!url || typeof url !== 'string' || !validator.isURL(url)) {
       serverLogger.warn(`Invalid or missing URL in request body: ${url}`);
       return res.status(400).json({
         success: false,
+        errorCode: 'INVALID_URL',
         message: 'A valid URL (string) is required',
       });
     }
@@ -39,9 +40,12 @@ router.post('/', async (req, res) => {
       data: profileDetails,
     });
   } catch (error) {
-    serverLogger.error(`Error during profile scan for URL ${req.body.url || 'unknown'}: ${error.message}`);
+    serverLogger.error(`Error during profile scan for URL ${req.body.url || 'unknown'}: ${error.message}`, {
+      stack: error.stack,
+    });
     res.status(500).json({
       success: false,
+      errorCode: 'SCAN_ERROR',
       message: 'Failed to complete the profile scan. Please try again later.',
     });
   }
@@ -60,9 +64,12 @@ router.get('/', async (req, res) => {
       logs,
     });
   } catch (error) {
-    serverLogger.error(`Error retrieving scan logs: ${error.message}`);
+    serverLogger.error(`Error retrieving scan logs: ${error.message}`, {
+      stack: error.stack,
+    });
     res.status(500).json({
       success: false,
+      errorCode: 'LOGS_RETRIEVAL_ERROR',
       message: 'Failed to retrieve scan logs',
     });
   }
@@ -80,9 +87,12 @@ router.delete('/', async (req, res) => {
       message: 'All scan logs cleared successfully',
     });
   } catch (error) {
-    serverLogger.error(`Error clearing scan logs: ${error.message}`);
+    serverLogger.error(`Error clearing scan logs: ${error.message}`, {
+      stack: error.stack,
+    });
     res.status(500).json({
       success: false,
+      errorCode: 'LOGS_CLEAR_ERROR',
       message: 'Failed to clear scan logs',
     });
   }

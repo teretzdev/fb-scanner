@@ -21,11 +21,7 @@ async function scanProfile(url) {
 
   serverLogger.info(`Initiating profile scan for URL: ${url}`, { url });
 
-  let browser;
-  try {
-    browser = await launchBrowser();
-    const page = await browser.newPage();
-
+  return await withBrowser(async (page) => {
     await loginToFacebook(page);
     await navigateToProfile(page, url);
 
@@ -33,36 +29,42 @@ async function scanProfile(url) {
     serverLogger.info(`Successfully extracted profile details`, { profileDetails });
 
     return profileDetails;
+  }, url);
+}
+
+/**
+ * Utility function to manage Puppeteer browser lifecycle.
+ * @param {Function} callback - The function to execute with the browser page.
+ * @param {string} url - The URL being processed (for logging purposes).
+ * @returns {Promise<any>} - The result of the callback function.
+ */
+async function withBrowser(callback, url) {
+  let browser;
+  try {
+    serverLogger.debug('Launching Puppeteer browser', {
+      headless: config.PUPPETEER_HEADLESS,
+      args: config.PUPPETEER_ARGS,
+    });
+    browser = await puppeteer.launch({
+      headless: config.PUPPETEER_HEADLESS,
+      args: config.PUPPETEER_ARGS,
+    });
+    serverLogger.info('Puppeteer browser launched successfully');
+
+    const page = await browser.newPage();
+    return await callback(page);
   } catch (error) {
-    serverLogger.error(`Error during profile scanning`, {
+    serverLogger.error(`Error during browser operation for URL: ${url}`, {
       message: error.message,
       stack: error.stack,
-      url,
     });
-    throw new Error(`Failed to scan profile: ${error.message}. URL: ${url}`);
+    throw error;
   } finally {
     if (browser) {
       await browser.close();
       serverLogger.info('Puppeteer browser closed successfully');
     }
   }
-}
-
-/**
- * Launches a Puppeteer browser instance.
- * @returns {Promise<Browser>} - The launched browser instance.
- */
-async function launchBrowser() {
-  serverLogger.debug('Launching Puppeteer browser', {
-    headless: config.PUPPETEER_HEADLESS,
-    args: config.PUPPETEER_ARGS,
-  });
-  const browser = await puppeteer.launch({
-    headless: config.PUPPETEER_HEADLESS,
-    args: config.PUPPETEER_ARGS,
-  });
-  serverLogger.info('Puppeteer browser launched successfully');
-  return browser;
 }
 
 /**
@@ -127,6 +129,7 @@ async function extractProfileDetails(page) {
 
 module.exports = {
   scanProfile,
+  withBrowser, // Exported for testing purposes
 };
 ```
 

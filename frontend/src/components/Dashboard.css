@@ -30,7 +30,7 @@
   margin: 0;
 }
 
-.dashboard-header .action-button {
+.dashboard-header__action-button {
   padding: 10px 15px;
   background-color: #007bff;
   color: #fff;
@@ -40,12 +40,12 @@
   font-size: 14px;
 }
 
-.dashboard-header .action-button:hover {
+.dashboard-header__action-button:hover {
   background-color: #0056b3;
 }
 
 /* Card Section */
-.dashboard-card {
+.dashboard__card {
   background-color: #fff;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -54,13 +54,13 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.dashboard-card h2 {
+.dashboard__card-title {
   font-size: 18px;
   color: #007bff;
   margin-bottom: 10px;
 }
 
-.dashboard-card p {
+.dashboard__card-text {
   margin: 0;
   color: #555;
 }
@@ -72,29 +72,28 @@
   margin-top: 20px;
 }
 
-.dashboard-table th,
-.dashboard-table td {
+.dashboard__table-cell {
   padding: 10px;
   text-align: left;
   border: 1px solid #ddd;
 }
 
-.dashboard-table th {
+.dashboard__table-header {
   background-color: #007bff;
   color: #fff;
   font-weight: bold;
 }
 
-.dashboard-table tr:nth-child(even) {
+.dashboard__table-row:nth-child(even) {
   background-color: #f2f2f2;
 }
 
-.dashboard-table tr:hover {
+.dashboard__table-row:hover {
   background-color: #e9ecef;
 }
 
 /* Button Styles */
-.dashboard-button {
+.dashboard__button {
   padding: 10px 15px;
   background-color: #28a745;
   color: #fff;
@@ -104,15 +103,15 @@
   font-size: 14px;
 }
 
-.dashboard-button:hover {
+.dashboard__button:hover {
   background-color: #218838;
 }
 
-.dashboard-button.danger {
+.dashboard__button--danger {
   background-color: #dc3545;
 }
 
-.dashboard-button.danger:hover {
+.dashboard__button--danger:hover {
   background-color: #a71d2a;
 }
 
