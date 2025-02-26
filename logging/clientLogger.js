@@ -4,64 +4,34 @@
  * Provides consistent logging functionality across popup.js, content.js, and background.js.
  */
 
-const winston = require('winston');
-
 // Define log levels and their corresponding colors
 const logLevels = {
-  levels: {
-    error: 0,
-    warn: 1,
-    info: 2,
-    debug: 3,
-  },
-  colors: {
-    error: 'red',
-    warn: 'yellow',
-    info: 'green',
-    debug: 'blue',
-  },
+  error: 'color: red;',
+  warn: 'color: orange;',
+  info: 'color: green;',
+  debug: 'color: blue;',
 };
 
-// Apply colors to log levels
-winston.addColors(logLevels.colors);
-
-// Create a custom format for client-side logging
-const logFormat = winston.format.combine(
-  winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-  winston.format.printf(({ timestamp, level, message, ...meta }) => {
-    const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
-    return `[${timestamp}] [${level.toUpperCase()}] ${message} ${metaString}`;
-  })
-);
-
-// Create a console transport for logging
-const consoleTransport = new winston.transports.Console({
-  format: winston.format.combine(
-    winston.format.colorize(),
-    logFormat
-  ),
-  handleExceptions: true,
-});
-
-// Create the logger instance
-const clientLogger = winston.createLogger({
-  levels: logLevels.levels,
-  format: logFormat,
-  transports: [consoleTransport],
-  exitOnError: false, // Prevent the logger from exiting the process on error
-});
+// Utility function to get the current timestamp
+function getTimestamp() {
+  return new Date().toISOString();
+}
 
 // Utility function to log messages in the Chrome extension environment
 function log(level, message, meta = {}) {
-  if (!clientLogger[level]) {
+  if (!logLevels[level]) {
     throw new Error(`Invalid log level: ${level}`);
   }
-  clientLogger[level](message, meta);
+
+  const metaString = Object.keys(meta).length ? JSON.stringify(meta) : '';
+  console.log(
+    `%c[${getTimestamp()}] [${level.toUpperCase()}] ${message} ${metaString}`,
+    logLevels[level]
+  );
 }
 
-// Export the logger instance and utility function
+// Export the utility function
 module.exports = {
-  logger: clientLogger,
   log,
 };
 ```
