@@ -68,4 +68,23 @@ router.get('/', async (req, res) => {
   }
 });
 
+router.delete('/', async (req, res) => {
+  try {
+    // Clear all scan logs
+    await storage.saveLog([]); // Pass an empty array to clear logs
+
+    logger.info('All scan logs cleared successfully');
+    res.status(200).json({
+      success: true,
+      message: 'All scan logs cleared successfully',
+    });
+  } catch (error) {
+    logger.error(`Error clearing scan logs: ${error.message}`);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to clear scan logs',
+    });
+  }
+});
+
 module.exports = router;

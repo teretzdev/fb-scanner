@@ -67,37 +67,45 @@ router.delete('/', async (req, res) => {
     const { url } = req.body;
 
     // Validate input
-    if (!url || !isValidUrl(url)) {
-      logger.warn('Invalid or missing URL in request body');
+    if (!url || typeof url !== 'string' || !isValidUrl(url)) {
+      logger.warn(`Invalid or missing URL in DELETE request: ${url}`);
       return res.status(400).json({
         success: false,
-        message: 'A valid URL is required',
+        message: 'A valid URL (string) is required for deletion',
       });
     }
 
-    // Retrieve current group URLs
-    const groupUrls = await storage.getGroupUrls();
+    try {
+      // Retrieve current group URLs
+      const groupUrls = await storage.getGroupUrls();
 
-    // Check if the URL exists in the list
-    if (!groupUrls.includes(url)) {
-      logger.warn(`Group URL not found: ${url}`);
-      return res.status(404).json({
+      // Check if the URL exists in the list
+      if (!groupUrls.includes(url)) {
+        logger.warn(`Group URL not found: ${url}`);
+        return res.status(404).json({
+          success: false,
+          message: 'Group URL not found in the list',
+          groupUrls,
+        });
+      }
+
+      // Remove the URL and update the storage
+      const updatedGroupUrls = groupUrls.filter((groupUrl) => groupUrl !== url);
+      await storage.saveGroupUrls(updatedGroupUrls);
+
+      logger.info(`Group URL removed successfully: ${url}`);
+      return res.status(200).json({
+        success: true,
+        message: 'Group URL removed successfully',
+        groupUrls: updatedGroupUrls,
+      });
+    } catch (error) {
+      logger.error(`Error removing group URL: ${error.message}`);
+      return res.status(500).json({
         success: false,
-        message: 'Group URL not found',
-        groupUrls: groupUrls.filter((groupUrl) => groupUrl !== url),
+        message: 'An error occurred while removing the group URL',
       });
     }
-
-    // Remove the URL and update the storage
-    const updatedGroupUrls = groupUrls.filter((groupUrl) => groupUrl !== url);
-    await storage.saveGroupUrls(updatedGroupUrls);
-
-    logger.info(`Group URL removed successfully: ${url}`);
-    res.status(200).json({
-      success: true,
-      message: 'Group URL removed successfully',
-      groupUrls: updatedGroupUrls,
-    });
   } catch (error) {
     logger.error(`Error removing group URL: ${error.message}`);
     res.status(500).json({
