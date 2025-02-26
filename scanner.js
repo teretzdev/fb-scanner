@@ -7,6 +7,7 @@
 const puppeteer = require('puppeteer');
 const logger = require('./logger');
 const storage = require('./storage');
+const config = require('./config');
 
 /**
  * Scans a Facebook group URL and extracts posts and comments.
@@ -24,8 +25,8 @@ async function scanUrl(url) {
   try {
     // Launch Puppeteer browser
     browser = await puppeteer.launch({
-      headless: true,
-      args: ['--no-sandbox', '--disable-setuid-sandbox'],
+      headless: config.PUPPETEER_HEADLESS,
+      args: config.PUPPETEER_ARGS,
     });
 
     const page = await browser.newPage();
@@ -56,7 +57,7 @@ async function scanUrl(url) {
     logger.info('Logged in to Facebook successfully');
 
     // Wait for the group page to load
-    await page.waitForSelector('[role="feed"]', { timeout: 10000 });
+    await page.waitForSelector(config.FACEBOOK_GROUP_SELECTOR, { timeout: config.DEFAULT_TIMEOUT });
 
     // Extract posts and comments from the group
     const posts = await page.evaluate(() => {
@@ -85,7 +86,7 @@ async function scanUrl(url) {
     return { posts };
   } catch (error) {
     logger.error(`Error during scanning: ${error.message}`);
-    throw new Error(`Failed to scan URL: ${error.message}`);
+    throw new Error(`Failed to scan URL: ${error.message}. URL: ${url}`);
   } finally {
     if (browser) {
       await browser.close();

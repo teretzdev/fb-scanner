@@ -9,10 +9,10 @@ const path = require('path');
 const logger = require('./logger');
 
 // Define file paths for storing data
-const DATA_DIR = path.join(__dirname, 'data');
-const CREDENTIALS_FILE = path.join(DATA_DIR, 'credentials.json');
-const GROUP_URLS_FILE = path.join(DATA_DIR, 'groupUrls.json');
-const LOGS_FILE = path.join(DATA_DIR, 'logs.json');
+const config = require('./config');
+const CREDENTIALS_FILE = config.CREDENTIALS_FILE;
+const GROUP_URLS_FILE = config.GROUP_URLS_FILE;
+const LOGS_FILE = config.LOGS_FILE;
 
 // Ensure the data directory exists
 async function ensureDataDirectory() {
@@ -21,6 +21,38 @@ async function ensureDataDirectory() {
     logger.info('Data directory ensured');
   } catch (error) {
     logger.error(`Failed to ensure data directory: ${error.message}`);
+    throw error;
+  }
+}
+
+// Remove a group URL
+async function removeGroupUrl(url) {
+  try {
+    await ensureDataDirectory();
+    let groupUrls = [];
+    try {
+      const data = await fs.readFile(GROUP_URLS_FILE, 'utf-8');
+      groupUrls = JSON.parse(data);
+    } catch (error) {
+      if (error.code === 'ENOENT') {
+        logger.warn('Group URLs file not found');
+        return [];
+      }
+      throw error;
+    }
+
+    if (!groupUrls.includes(url)) {
+      logger.warn(`Group URL not found: ${url}`);
+      return groupUrls;
+    }
+
+    // Remove the URL and save the updated list
+    groupUrls = groupUrls.filter((groupUrl) => groupUrl !== url);
+    await fs.writeFile(GROUP_URLS_FILE, JSON.stringify(groupUrls, null, 2));
+    logger.info(`Group URL removed: ${url}`);
+    return groupUrls;
+  } catch (error) {
+    logger.error(`Failed to remove group URL: ${error.message}`);
     throw error;
   }
 }
@@ -145,4 +177,5 @@ module.exports = {
   getGroupUrls,
   saveLog,
   getLogs,
+  removeGroupUrl,
 };
