@@ -1,0 +1,292 @@
+/**
+ * Dashboard.css
+ * Styles for the Dashboard component.
+ * Provides a clean and modern design for the main interface of the application.
+ */
+
+/* General Reset */
+.dashboard-container {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+  background-color: #f9f9f9;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+/* Header Section */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+  font-size: 24px;
+  color: #007bff;
+  margin: 0;
+}
+
+.dashboard-header .action-button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dashboard-header .action-button:hover {
+  background-color: #0056b3;
+}
+
+/* Card Section */
+.dashboard-card {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card h2 {
+  font-size: 18px;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.dashboard-card p {
+  margin: 0;
+  color: #555;
+}
+
+/* Table Section */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.dashboard-table th {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+}
+
+.dashboard-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.dashboard-table tr:hover {
+  background-color: #e9ecef;
+}
+
+/* Button Styles */
+.dashboard-button {
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dashboard-button:hover {
+  background-color: #218838;
+}
+
+.dashboard-button.danger {
+  background-color: #dc3545;
+}
+
+.dashboard-button.danger:hover {
+  background-color: #a71d2a;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-header h1 {
+    margin-bottom: 10px;
+  }
+
+  .dashboard-card {
+    padding: 15px;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 8px;
+  }
+}
+```
+
+---
+
+### Step 4: Review the Code
+- **Purpose Fulfilled**: The file provides a clean and modern design for the Dashboard component, including styles for headers, cards, buttons, and tables.
+- **Conventions Followed**: The code follows the conventions and style patterns used in the existing `styles.css` file, such as semantic class names and consistent spacing.
+- **Completeness**: The file is fully functional and includes responsive design for smaller screens.
+- **Error Handling**: Not applicable for CSS, but the styles are robust and handle various UI states (e.g., hover effects, responsive design).
+
+---
+
+### Final Output
+The complete `frontend/src/components/Dashboard.css` file is as follows:
+
+```
+/**
+ * Dashboard.css
+ * Styles for the Dashboard component.
+ * Provides a clean and modern design for the main interface of the application.
+ */
+
+/* General Reset */
+.dashboard-container {
+  margin: 0;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  color: #333;
+  background-color: #f9f9f9;
+  line-height: 1.5;
+  box-sizing: border-box;
+}
+
+/* Header Section */
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.dashboard-header h1 {
+  font-size: 24px;
+  color: #007bff;
+  margin: 0;
+}
+
+.dashboard-header .action-button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dashboard-header .action-button:hover {
+  background-color: #0056b3;
+}
+
+/* Card Section */
+.dashboard-card {
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card h2 {
+  font-size: 18px;
+  color: #007bff;
+  margin-bottom: 10px;
+}
+
+.dashboard-card p {
+  margin: 0;
+  color: #555;
+}
+
+/* Table Section */
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+.dashboard-table th,
+.dashboard-table td {
+  padding: 10px;
+  text-align: left;
+  border: 1px solid #ddd;
+}
+
+.dashboard-table th {
+  background-color: #007bff;
+  color: #fff;
+  font-weight: bold;
+}
+
+.dashboard-table tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+.dashboard-table tr:hover {
+  background-color: #e9ecef;
+}
+
+/* Button Styles */
+.dashboard-button {
+  padding: 10px 15px;
+  background-color: #28a745;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.dashboard-button:hover {
+  background-color: #218838;
+}
+
+.dashboard-button.danger {
+  background-color: #dc3545;
+}
+
+.dashboard-button.danger:hover {
+  background-color: #a71d2a;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .dashboard-header h1 {
+    margin-bottom: 10px;
+  }
+
+  .dashboard-card {
+    padding: 15px;
+  }
+
+  .dashboard-table th,
+  .dashboard-table td {
+    padding: 8px;
+  }
+}
