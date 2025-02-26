@@ -4,7 +4,7 @@
  * Includes enhanced error handling and detailed logs.
  */
 
-const { log } = require('./logging/clientLogger');
+const log = require('./logging/clientLogger').log;
 
 // Listener for messages from content scripts or popup
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -43,19 +43,20 @@ let monitorTimeout;
 // Debounced function to monitor Facebook group URLs
 async function monitorGroupUrls() {
   try {
-    const { groupUrls = [] } = await chrome.storage.local.get({ groupUrls: [] });
+    const { groupUrls = [] } = await chrome.storage.local.get({ groupUrls: [] }).catch((error) => {
+      log('error', `Failed to retrieve group URLs: ${error.message}`);
+      throw error;
+    });
+
     if (groupUrls.length === 0) {
       log('warn', 'No group URLs found for monitoring');
       return;
     }
 
-    let tabs = [];
-    try {
-      tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-    } catch (error) {
+    const tabs = await chrome.tabs.query({ active: true, currentWindow: true }).catch((error) => {
       log('error', `Failed to query active tabs: ${error.message}`);
-      return;
-    }
+      throw error;
+    });
 
     const activeTabUrls = tabs.map((tab) => tab.url);
 
@@ -64,8 +65,12 @@ async function monitorGroupUrls() {
     }
 
     for (const url of groupUrls) {
-      const { monitoringStates = {} } = await chrome.storage.local.get({ monitoringStates: {} });
       try {
+        const { monitoringStates = {} } = await chrome.storage.local.get({ monitoringStates: {} }).catch((error) => {
+          log('error', `Failed to retrieve monitoring states: ${error.message}`);
+          throw error;
+        });
+
         const isMonitoringEnabled = monitoringStates[url] === true;
 
         if (isMonitoringEnabled) {
@@ -83,7 +88,7 @@ async function monitorGroupUrls() {
       }
     }
   } catch (error) {
-    log('error', `Error in monitorGroupUrls: ${error.message}`);
+    log('error', `Unexpected error in monitorGroupUrls: ${error.message}`);
   }
 }
 

@@ -32,7 +32,7 @@ router.get('/', async (req, res) => {
 router.delete('/', async (req, res) => {
   try {
     // Clear logs by overwriting the logs file with an empty array
-    await storage.saveLog([]); // Pass an empty array to clear logs
+    await storage.saveLogs([]); // Pass an empty array to clear logs
 
     serverLogger.info('Logs cleared successfully');
     res.status(200).json({
@@ -95,7 +95,7 @@ router.get('/', async (req, res) => {
 router.delete('/', async (req, res) => {
   try {
     // Clear logs by overwriting the logs file with an empty array
-    await storage.saveLog([]); // Pass an empty array to clear logs
+    await storage.saveLogs([]); // Pass an empty array to clear logs
 
     serverLogger.info('Logs cleared successfully');
     res.status(200).json({

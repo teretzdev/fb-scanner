@@ -37,8 +37,11 @@ function log(level, message, meta = {}) {
   );
 }
 
-// Export the log function
-export { log };
+/**
+ * Export the log function using CommonJS syntax.
+ * This ensures compatibility with the rest of the codebase.
+ */
+module.exports = { log };
 ```
 
 ---

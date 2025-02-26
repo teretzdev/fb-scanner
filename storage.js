@@ -114,19 +114,13 @@ async function addGroupUrl(url) {
   }
 }
 
-// Get all group URLs
-async function getGroupUrls() {
+async function saveGroupUrls(groupUrls) {
   try {
-    const data = await fs.readFile(GROUP_URLS_FILE, 'utf-8');
-    const groupUrls = JSON.parse(data);
-    serverLogger.info('Group URLs retrieved successfully', { file: GROUP_URLS_FILE });
-    return groupUrls;
+    await ensureDataDirectory();
+    await fs.writeFile(GROUP_URLS_FILE, JSON.stringify(groupUrls, null, 2));
+    serverLogger.info('Group URLs saved successfully', { file: GROUP_URLS_FILE });
   } catch (error) {
-    if (error.code === 'ENOENT') {
-      serverLogger.warn('Group URLs file not found', { file: GROUP_URLS_FILE });
-      return [];
-    }
-    serverLogger.error('Failed to retrieve group URLs', { error: error.message, file: GROUP_URLS_FILE });
+    serverLogger.error('Failed to save group URLs', { error: error.message, file: GROUP_URLS_FILE });
     throw error;
   }
 }
@@ -178,4 +172,5 @@ module.exports = {
   saveLog,
   getLogs,
   removeGroupUrl,
+  saveGroupUrls,
 };
