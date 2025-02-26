@@ -1,0 +1,263 @@
+/**
+ * main.css
+ * Global CSS file for styling the React application.
+ * Provides consistent styling across all components and ensures a cohesive user interface.
+ */
+
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  font-family: 'Arial', sans-serif;
+  font-size: 16px;
+  color: #333;
+  background-color: #f9f9f9;
+  line-height: 1.6;
+  height: 100%;
+}
+
+#root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* App Container */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Header */
+.app-header {
+  background-color: #4CAF50;
+  color: white;
+  padding: 20px;
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Main Content */
+.app-main {
+  flex: 1;
+  padding: 20px;
+}
+
+/* Footer */
+.app-footer {
+  background-color: #333;
+  color: white;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.9rem;
+}
+
+/* Dashboard Styles */
+.dashboard-container {
+  text-align: center;
+}
+
+.dashboard-header {
+  margin-bottom: 20px;
+}
+
+.dashboard-main {
+  display: flex;
+  justify-content: space-around;
+  flex-wrap: wrap;
+}
+
+.dashboard-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 10px;
+  width: 300px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  text-align: left;
+}
+
+.dashboard-card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+}
+
+.dashboard-card p {
+  font-size: 0.9rem;
+  margin-bottom: 15px;
+}
+
+.dashboard-link {
+  display: inline-block;
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
+
+.dashboard-link:hover {
+  background-color: #45a049;
+}
+
+/* Credentials Form */
+.credentials-form {
+  max-width: 400px;
+  margin: 0 auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.credentials-form h2 {
+  margin-bottom: 20px;
+}
+
+.credentials-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.credentials-form input {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.credentials-form button {
+  width: 100%;
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.credentials-form button:hover {
+  background-color: #45a049;
+}
+
+.message {
+  margin-top: 10px;
+  font-size: 0.9rem;
+  color: #d9534f;
+}
+
+/* Group URL Manager */
+.group-url-manager {
+  max-width: 600px;
+  margin: 0 auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.group-url-manager h2 {
+  margin-bottom: 20px;
+}
+
+.group-url-manager label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.group-url-manager input {
+  width: calc(100% - 100px);
+  padding: 10px;
+  margin-bottom: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.group-url-manager button {
+  padding: 10px;
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.group-url-manager button:hover {
+  background-color: #45a049;
+}
+
+.group-url-list {
+  list-style: none;
+  padding: 0;
+}
+
+.group-url-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  margin-bottom: 10px;
+  background-color: #f9f9f9;
+}
+
+.delete-button {
+  background-color: #d9534f;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.delete-button:hover {
+  background-color: #c9302c;
+}
+
+/* Log Viewer */
+.log-viewer {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.log-viewer h2 {
+  margin-bottom: 20px;
+}
+
+.logs-container {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 4px;
+}
+
+.logs-container p {
+  margin-bottom: 10px;
+}
+
+.error {
+  color: #d9534f;
+  font-weight: bold;
+}

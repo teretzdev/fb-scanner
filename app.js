@@ -7,6 +7,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const serverLogger = require('./logging/serverLogger');
+const cors = require('cors');
 
 // Initialize Express app
 const app = express();
@@ -28,8 +29,10 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-// Serve static files from the "public" directory
-app.use(express.static('public'));
+app.use(cors());
+
+// Serve static files from the React frontend's build directory
+app.use(express.static('frontend/build'));
 
 const healthRoutes = require('./routes/health');
 const credentialsRoutes = require('./routes/credentials');
@@ -50,6 +53,11 @@ app.use((err, req, res, next) => {
     success: false,
     message: err.message || 'Internal Server Error',
   });
+});
+
+// Catch-all route to serve React frontend
+app.get('*', (req, res) => {
+  res.sendFile('index.html', { root: 'frontend/build' });
 });
 
 // Start the server

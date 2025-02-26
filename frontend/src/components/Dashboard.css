@@ -1,0 +1,95 @@
+/**
+ * Dashboard.css
+ * Styles specific to the Dashboard component of the FB Scanner application.
+ * Provides a clean, modern interface for the main dashboard.
+ */
+
+/* Dashboard Container */
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background-color: #f4f4f9;
+  min-height: 100vh;
+}
+
+/* Header Section */
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  font-size: 2rem;
+  color: #4CAF50;
+  margin-bottom: 10px;
+}
+
+.dashboard-header p {
+  font-size: 1rem;
+  color: #555;
+}
+
+/* Main Section */
+.dashboard-main {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+}
+
+/* Dashboard Card */
+.dashboard-card {
+  background-color: #fff;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  width: 300px;
+  text-align: center;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.dashboard-card h2 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.dashboard-card p {
+  font-size: 1rem;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+/* Dashboard Link */
+.dashboard-link {
+  display: inline-block;
+  background-color: #4CAF50;
+  color: #fff;
+  padding: 10px 15px;
+  text-decoration: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.dashboard-link:hover {
+  background-color: #45a049;
+}
+
+/* Footer Section */
+.dashboard-footer {
+  margin-top: 30px;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #777;
+}
