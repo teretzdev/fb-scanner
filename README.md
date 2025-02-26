@@ -47,6 +47,5 @@ For more details, refer to the source code and comments in the respective files.
 ## Future Improvements
 
 - **Encryption for Credentials**: Enhance security by encrypting stored credentials.
-- **Automatic Injection**: Automatically inject content scripts into tabs when they become active.
 - **Improved Error Reporting**: Provide more detailed and user-friendly error messages.
 - **External Monitoring Integration**: Integrate with external monitoring services for advanced analytics and reporting.
