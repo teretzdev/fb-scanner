@@ -24,13 +24,6 @@ function getTimestamp() {
  * @param {string} message - The message to log.
  * @param {Object} [meta={}] - Additional metadata to include in the log.
  */
-/**
- * Logs messages in the browser console with custom formatting.
- * Supports log levels: error, warn, info, and debug.
- * @param {string} level - The log level (error, warn, info, debug).
- * @param {string} message - The message to log.
- * @param {Object} [meta={}] - Additional metadata to include in the log.
- */
 function log(level, message, meta = {}) {
   if (!logLevels[level]) {
     console.error(`%c[${getTimestamp()}] [ERROR] Invalid log level: ${level}`, logLevels.error);

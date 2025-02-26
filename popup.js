@@ -4,7 +4,7 @@
  * Includes detailed logging and error handling.
  */
 
-import { log } from './logging/clientLogger.js';
+const { log } = require('./logging/clientLogger');
 
 // Save Facebook credentials to Chrome storage
 // TODO: Consider encrypting credentials before storing them for enhanced security.
