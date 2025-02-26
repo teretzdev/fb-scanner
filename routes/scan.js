@@ -71,7 +71,7 @@ router.get('/', async (req, res) => {
 router.delete('/', async (req, res) => {
   try {
     // Clear all scan logs
-    await storage.saveLog([]); // Pass an empty array to clear logs
+    await storage.clearLogs();
 
     logger.info('All scan logs cleared successfully');
     res.status(200).json({
