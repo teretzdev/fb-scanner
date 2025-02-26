@@ -4,7 +4,7 @@
  * Provides reusable helper functions to improve code maintainability and reduce redundancy.
  */
 
-const logger = require('./logger');
+const serverLogger = require('./logging/serverLogger');
 
 /**
  * Validates whether a given string is a valid URL.
@@ -16,7 +16,7 @@ function isValidUrl(url) {
     new URL(url);
     return true;
   } catch (error) {
-    logger.warn(`Invalid URL: ${url}`);
+    serverLogger.warn(`Invalid URL: ${url}`);
     return false;
   }
 }
