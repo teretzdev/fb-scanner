@@ -6,13 +6,25 @@
 
 const express = require('express');
 const bodyParser = require('body-parser');
-const logger = require('./logger');
+const serverLogger = require('./logging/serverLogger');
 
 // Initialize Express app
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Middleware
+/**
+ * Middleware
+ */
+
+// Log incoming HTTP requests
+app.use((req, res, next) => {
+  serverLogger.info(`Incoming request: ${req.method} ${req.url}`, {
+    headers: req.headers,
+    body: req.body,
+  });
+  next();
+});
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
@@ -33,7 +45,7 @@ app.use('/api/scan', scanRoutes);
 app.use('/api/logs', logsRoutes);
 
 app.use((err, req, res, next) => {
-  logger.error(`Unhandled error: ${err.message}`);
+  serverLogger.error(`Unhandled error: ${err.message}`);
   res.status(err.status || 500).json({
     success: false,
     message: err.message || 'Internal Server Error',
@@ -42,5 +54,5 @@ app.use((err, req, res, next) => {
 
 // Start the server
 app.listen(PORT, () => {
-  logger.info(`Server is running on http://localhost:${PORT}`);
+  serverLogger.info(`Server is running on http://localhost:${PORT}`);
 });

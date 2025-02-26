@@ -25,41 +25,30 @@ const logLevels = {
 // Apply colors to log levels
 winston.addColors(logLevels.colors);
 
-// Create a Winston logger instance
-const logger = winston.createLogger({
+// Create a basic Winston logger instance
+const fallbackLogger = winston.createLogger({
   levels: logLevels.levels,
   format: winston.format.combine(
     winston.format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
     winston.format.printf(({ timestamp, level, message }) => `[${timestamp}] [${level.toUpperCase()}] ${message}`)
   ),
   transports: [
-    // Log errors to a file
+    // Log all levels to a fallback log file
     new winston.transports.File({
-      filename: 'logs/error.log',
-      level: 'error',
+      filename: 'logs/fallback.log',
       handleExceptions: true,
     }),
-    // Log all levels to a general log file
-    new winston.transports.File({
-      filename: 'logs/app.log',
-      handleExceptions: true,
-    }),
-  ],
-  exitOnError: false, // Prevent the logger from exiting the process on error
-});
-
-// Add a console transport for development
-if (process.env.NODE_ENV !== 'production') {
-  logger.add(
+    // Add a console transport for all environments
     new winston.transports.Console({
       format: winston.format.combine(
         winston.format.colorize(),
         winston.format.printf(({ timestamp, level, message }) => `[${timestamp}] [${level.toUpperCase()}] ${message}`)
       ),
       handleExceptions: true,
-    })
-  );
-}
+    }),
+  ],
+  exitOnError: false, // Prevent the logger from exiting the process on error
+});
 
-// Export the logger instance for use across the application
-module.exports = logger;
+// Export the fallback logger instance for use across the application
+module.exports = fallbackLogger;

@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const storage = require('../storage');
-const logger = require('../logger');
+const serverLogger = require('../logging/serverLogger');
 
 // GET /api/logs - Retrieve all logs
 router.get('/', async (req, res) => {
@@ -14,13 +14,13 @@ router.get('/', async (req, res) => {
     // Retrieve logs using the storage module
     const logs = await storage.getLogs();
 
-    logger.info('Logs retrieved successfully');
+    serverLogger.info('Logs retrieved successfully');
     res.status(200).json({
       success: true,
       logs,
     });
   } catch (error) {
-    logger.error(`Error retrieving logs: ${error.message}`);
+    serverLogger.error(`Error retrieving logs: ${error.message}`);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve logs',
@@ -34,13 +34,13 @@ router.delete('/', async (req, res) => {
     // Clear logs by overwriting the logs file with an empty array
     await storage.saveLog([]); // Pass an empty array to clear logs
 
-    logger.info('Logs cleared successfully');
+    serverLogger.info('Logs cleared successfully');
     res.status(200).json({
       success: true,
       message: 'Logs cleared successfully',
     });
   } catch (error) {
-    logger.error(`Error clearing logs: ${error.message}`);
+    serverLogger.error(`Error clearing logs: ${error.message}`);
     res.status(500).json({
       success: false,
       message: 'Failed to clear logs',
@@ -69,7 +69,7 @@ The complete `routes/logs.js` file is as follows:
 const express = require('express');
 const router = express.Router();
 const storage = require('../storage');
-const logger = require('../logger');
+const serverLogger = require('../logging/serverLogger');
 
 // GET /api/logs - Retrieve all logs
 router.get('/', async (req, res) => {
@@ -77,13 +77,13 @@ router.get('/', async (req, res) => {
     // Retrieve logs using the storage module
     const logs = await storage.getLogs();
 
-    logger.info('Logs retrieved successfully');
+    serverLogger.info('Logs retrieved successfully');
     res.status(200).json({
       success: true,
       logs,
     });
   } catch (error) {
-    logger.error(`Error retrieving logs: ${error.message}`);
+    serverLogger.error(`Error retrieving logs: ${error.message}`);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve logs',
@@ -97,13 +97,13 @@ router.delete('/', async (req, res) => {
     // Clear logs by overwriting the logs file with an empty array
     await storage.saveLog([]); // Pass an empty array to clear logs
 
-    logger.info('Logs cleared successfully');
+    serverLogger.info('Logs cleared successfully');
     res.status(200).json({
       success: true,
       message: 'Logs cleared successfully',
     });
   } catch (error) {
-    logger.error(`Error clearing logs: ${error.message}`);
+    serverLogger.error(`Error clearing logs: ${error.message}`);
     res.status(500).json({
       success: false,
       message: 'Failed to clear logs',

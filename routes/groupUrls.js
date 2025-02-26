@@ -6,7 +6,7 @@
 const express = require('express');
 const router = express.Router();
 const storage = require('../storage');
-const logger = require('../logger');
+const serverLogger = require('../logging/serverLogger');
 const { isValidUrl } = require('../utils');
 
 // POST /api/group-urls - Add a new group URL
@@ -16,7 +16,7 @@ router.post('/', async (req, res) => {
 
     // Validate input
     if (!url || typeof url !== 'string' || !isValidUrl(url)) {
-      logger.warn('Invalid or missing URL in request body');
+      serverLogger.warn('Invalid or missing URL in request body');
       return res.status(400).json({
         success: false,
         message: 'A valid URL is required',
@@ -25,7 +25,7 @@ router.post('/', async (req, res) => {
 
     // Add the group URL using the storage module
     const groupUrls = await storage.addGroupUrl(url);
-    logger.info(`Group URL added successfully: ${url}`);
+    serverLogger.info(`Group URL added successfully: ${url}`);
 
     res.status(200).json({
       success: true,
@@ -33,7 +33,7 @@ router.post('/', async (req, res) => {
       groupUrls,
     });
   } catch (error) {
-    logger.error(`Error adding group URL: ${error.message}`);
+    serverLogger.error(`Error adding group URL: ${error.message}`);
     res.status(500).json({
       success: false,
       message: 'Failed to add group URL',
@@ -47,13 +47,13 @@ router.get('/', async (req, res) => {
     // Retrieve group URLs using the storage module
     const groupUrls = await storage.getGroupUrls();
 
-    logger.info('Group URLs retrieved successfully');
+    serverLogger.info('Group URLs retrieved successfully');
     res.status(200).json({
       success: true,
       groupUrls,
     });
   } catch (error) {
-    logger.error(`Error retrieving group URLs: ${error.message}`);
+    serverLogger.error(`Error retrieving group URLs: ${error.message}`);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve group URLs',
@@ -68,7 +68,7 @@ router.delete('/', async (req, res) => {
 
     // Validate input
     if (!url || typeof url !== 'string' || !isValidUrl(url)) {
-      logger.warn(`Invalid or missing URL in DELETE request: ${url}`);
+      serverLogger.warn(`Invalid or missing URL in DELETE request: ${url}`);
       return res.status(400).json({
         success: false,
         message: 'A valid URL (string) is required for deletion',
@@ -81,7 +81,7 @@ router.delete('/', async (req, res) => {
 
       // Check if the URL exists in the list
       if (!groupUrls.includes(url)) {
-        logger.warn(`Group URL not found: ${url}`);
+        serverLogger.warn(`Group URL not found: ${url}`);
         return res.status(404).json({
           success: false,
           message: 'Group URL not found in the list',
@@ -93,21 +93,21 @@ router.delete('/', async (req, res) => {
       const updatedGroupUrls = groupUrls.filter((groupUrl) => groupUrl !== url);
       await storage.saveGroupUrls(updatedGroupUrls);
 
-      logger.info(`Group URL removed successfully: ${url}`);
+      serverLogger.info(`Group URL removed successfully: ${url}`);
       return res.status(200).json({
         success: true,
         message: 'Group URL removed successfully',
         groupUrls: updatedGroupUrls,
       });
     } catch (error) {
-      logger.error(`Error removing group URL: ${error.message}`);
+      serverLogger.error(`Error removing group URL: ${error.message}`);
       return res.status(500).json({
         success: false,
         message: 'An error occurred while removing the group URL',
       });
     }
   } catch (error) {
-    logger.error(`Error removing group URL: ${error.message}`);
+    serverLogger.error(`Error removing group URL: ${error.message}`);
     res.status(500).json({
       success: false,
       message: 'Failed to remove group URL',
