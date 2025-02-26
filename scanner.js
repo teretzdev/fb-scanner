@@ -58,19 +58,30 @@ async function scanUrl(url) {
     // Wait for the group page to load
     await page.waitForSelector('[role="feed"]', { timeout: 10000 });
 
-    // Extract posts from the group
+    // Extract posts and comments from the group
     const posts = await page.evaluate(() => {
-      const postElements = document.querySelectorAll('[role="article"]');
+      const postElements = document.querySelectorAll('[role="article"], div[data-pagelet^="FeedUnit_"]');
       return Array.from(postElements).map((post) => {
         const content = post.innerText || post.textContent;
-        const timestamp = post.querySelector('abbr')?.getAttribute('title') || 'Unknown time';
-        return { content, timestamp };
+        const timestamp = post.querySelector('abbr, time')?.getAttribute('title') || 'Unknown time';
+        const author = post.querySelector('[role="link"]')?.innerText || 'Unknown author';
+        const reactions = post.querySelector('[aria-label*="reactions"]')?.getAttribute('aria-label') || 'No reactions';
+        
+        // Extract comments
+        const commentElements = post.querySelectorAll('[aria-label="Comment"]');
+        const comments = Array.from(commentElements).map((comment) => {
+          const commentText = comment.innerText || comment.textContent;
+          const commenter = comment.querySelector('[role="link"]')?.innerText || 'Unknown commenter';
+          return { commenter, commentText };
+        });
+
+        return { content, timestamp, author, reactions, comments };
       });
     });
 
-    logger.info(`Extracted ${posts.length} posts from the group`);
+    logger.info(`Extracted ${posts.length} posts and their comments from the group`);
 
-    // Return the extracted posts
+    // Return the extracted posts and comments
     return { posts };
   } catch (error) {
     logger.error(`Error during scanning: ${error.message}`);
